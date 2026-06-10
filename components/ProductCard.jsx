@@ -1,0 +1,50 @@
+"use client";
+
+import Image from "next/image";
+
+export default function ProductCard({ product, onAddToCart, onOpenDetails }) {
+  // ── Extract product data + check for discount ──
+  const { name, priceUSD, originalPrice, category, image, description, ratioClass } = product;
+  const hasDiscount = originalPrice && originalPrice > priceUSD;
+
+  return (
+    <div
+      className="product-card"
+      onClick={() => onOpenDetails(product)}
+    >
+      <div className={`product-card-image-wrapper ${ratioClass}`}>
+        <Image
+          src={image}
+          alt={name}
+          fill
+          sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 33vw"
+          className="product-card-image"
+          loading="lazy"
+        />
+        {hasDiscount && <span className="product-card-badge">OFFER</span>}
+      </div>
+      <div className="product-card-info">
+        <span className="product-card-category">{category}</span>
+        <h3 className="product-card-title">{name}</h3>
+        {description && <p className="product-card-desc">{description}</p>}
+
+        <div className="product-card-price-row">
+          <div className="product-price-container">
+            {hasDiscount && <span className="price-original">${originalPrice.toFixed(2)} USD</span>}
+            <span className="price-primary">${priceUSD.toFixed(2)} USD</span>
+          </div>
+          <button
+            className="btn-add-to-cart"
+            title="Add to cart"
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddToCart(product);
+            }}
+          >
+            +
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

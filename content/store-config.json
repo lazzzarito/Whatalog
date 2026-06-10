@@ -1,0 +1,15 @@
+{
+  "name": "Whatalog Demo Store",
+  "location": "Miami, Florida, United States",
+  "whatsappNumber": "+15551234567",
+  "logoUrl": "/images/logo.webp",
+  "currency": {
+    "code": "USD",
+    "symbol": "$"
+  },
+  "promoBanners": [
+    "/api/images/promos/landscape-promo.webp",
+    "/api/images/promos/square-promo-1.webp",
+    "/api/images/promos/square-promo-2.webp"
+  ]
+}
