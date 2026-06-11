@@ -102,7 +102,11 @@ export default function Cart({ cartItems, onUpdateQty, onRemoveItem, onClearCart
                 <path d="M16 10a4 4 0 0 1-8 0" />
               </svg>
               <p>Your cart is empty.</p>
-              <button className="category-btn" onClick={() => setIsOpen(false)} style={{ background: "var(--border-color)", color: "var(--text-primary)" }}>
+              <button className="category-btn" onClick={() => setIsOpen(false)} style={{ background: "var(--border-color)", color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="19" y1="12" x2="5" y2="12"></line>
+                  <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
                 Back to store
               </button>
             </div>
@@ -116,9 +120,18 @@ export default function Cart({ cartItems, onUpdateQty, onRemoveItem, onClearCart
                     <span className="cart-item-price">${item.priceUSD.toFixed(2)} USD</span>
                     <div style={{ display: "flex", alignItems: "center", marginTop: "0.5rem" }}>
                       <div className="cart-item-qty-controls">
-                        <button className="qty-btn" onClick={() => onUpdateQty(item.id, item.quantity - 1)}>-</button>
+                        <button className="qty-btn" onClick={() => onUpdateQty(item.id, item.quantity - 1)} title="Decrease quantity">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                          </svg>
+                        </button>
                         <span className="qty-value">{item.quantity}</span>
-                        <button className="qty-btn" onClick={() => onUpdateQty(item.id, item.quantity + 1)}>+</button>
+                        <button className="qty-btn" onClick={() => onUpdateQty(item.id, item.quantity + 1)} title="Increase quantity">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                          </svg>
+                        </button>
                       </div>
                       <button className="btn-remove-item" onClick={() => onRemoveItem(item.id)} title="Remove product">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

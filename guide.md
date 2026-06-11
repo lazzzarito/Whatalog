@@ -929,6 +929,49 @@ Key features:
 
 ---
 
+## Template Info Popup
+
+The project includes a modal popup (`components/TemplateInfoModal.jsx`) that appears automatically on first visit. It explains that this is a template and provides a download ZIP + link to the GitHub repo.
+
+### How it works
+
+- A `localStorage` flag (`whatalog_template_seen`) controls whether the popup has been dismissed.
+- On first visit (no flag found), the popup appears after a 600ms delay.
+- Once dismissed, the flag is set and the popup won't auto-show again.
+- Users can re-open it anytime via the **"What is this? — Template info"** link in the footer.
+
+### Disable the auto-popup entirely
+
+In `components/TemplateInfoModal.jsx`, remove or comment out the first `useEffect`:
+
+```js
+// Remove or comment this block to disable auto-show on first visit
+// useEffect(() => {
+//   const seen = localStorage.getItem("whatalog_template_seen");
+//   if (!seen) {
+//     const timer = setTimeout(show, 600);
+//     return () => clearTimeout(timer);
+//   }
+// }, [show]);
+```
+
+### Re-purpose as a promo / announcement popup
+
+Since the popup uses the same modal pattern as the store info modal, you can easily adapt it:
+
+1. Edit the content inside `components/TemplateInfoModal.jsx` — replace the text, links, and buttons with your own promo message.
+2. Change the `localStorage` key from `"whatalog_template_seen"` to something like `"promo_spring2026_seen"` to reset visibility.
+3. Adjust the auto-show delay (currently 600ms) or remove it to show instantly on page load.
+
+### Remove the popup entirely
+
+1. Delete `components/TemplateInfoModal.jsx`.
+2. Remove the import and `<TemplateInfoModal />` from `app/CatalogContainer.jsx`.
+3. Remove the footer button that dispatches `open-template-modal` (inside `app/CatalogContainer.jsx`).
+4. Remove the associated CSS from `app/globals.css` (`.template-info-modal`, `.template-info-actions`, `.template-btn-download`, `.template-btn-got-it`, `.footer-template-link`).
+
+---
+
 ## Useful Commands
 
 ```bash

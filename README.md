@@ -51,6 +51,8 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) — your catalog is live.
 
+> 📖 **Full documentation available in [`guide.md`](guide.md)** — covers project structure, product format, configuration, customization, translation, and deployment.
+
 ---
 
 ## Customize

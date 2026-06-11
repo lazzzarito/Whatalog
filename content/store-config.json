@@ -11,5 +11,10 @@
     "/api/images/promos/landscape-promo.webp",
     "/api/images/promos/square-promo-1.webp",
     "/api/images/promos/square-promo-2.webp"
+  ],
+  "promoLinks": [
+    { "type": "section", "target": "offers" },
+    { "type": "product", "target": "perfume-rose" },
+    { "type": "product", "target": "reloj-elegante" }
   ]
 }

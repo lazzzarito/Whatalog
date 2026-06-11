@@ -1234,6 +1234,12 @@ body {
   overflow: hidden;
 }
 
+@media (min-width: 768px) {
+  .footer-map-frame {
+    min-height: 450px;
+  }
+}
+
 .footer-map-frame iframe {
   display: block;
   width: 100%;
@@ -1258,6 +1264,22 @@ body {
 .app-footer-copyright {
   font-size: 0.8rem;
   color: var(--text-secondary);
+  line-height: 1.8;
+}
+
+.footer-template-link {
+  background: none;
+  border: none;
+  color: var(--accent-green);
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.footer-template-link:hover {
+  color: var(--accent-hover);
 }
 
 .social-links {
@@ -1331,6 +1353,12 @@ body {
   box-shadow: var(--shadow-lg);
   position: relative;
   animation: modal-slide-up 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.store-info-modal::-webkit-scrollbar {
+  display: none;
 }
 
 @media (min-width: 1024px) {
@@ -1492,8 +1520,215 @@ body {
   transform: translateY(-2px);
 }
 
+.store-info-legal-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+  margin-top: 0.75rem;
+  padding: 0.6rem;
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 30px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.store-info-legal-btn:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--accent-green);
+}
+
+/* ===== Template Info Modal ===== */
+.template-info-modal {
+  max-width: 480px;
+}
+
+.template-info-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin-top: 0.5rem;
+}
+
+.template-btn-download,
+.template-btn-got-it {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.85rem;
+  border-radius: 30px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.template-btn-download {
+  background: var(--accent-green);
+  color: #fff;
+  border: none;
+}
+
+.template-btn-download:hover {
+  background: var(--accent-hover);
+  transform: translateY(-2px);
+}
+
+.template-btn-got-it {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.template-btn-got-it:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  transform: translateY(-2px);
+}
+
+.template-btn-pro {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.85rem;
+  border-radius: 30px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: linear-gradient(135deg, #f5af19, #f12711);
+  color: #fff;
+  border: none;
+}
+
+.template-btn-pro:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(241, 39, 17, 0.35);
+}
+
 /* ===== Product Modal (inherited) ===== */
 /* Keep existing modal styles from ProductModal.jsx if they are defined there */
+
+/* ===== Animations ===== */
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in-down {
+  from { opacity: 0; transform: translateY(-16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.app-header {
+  animation: fade-in-down 0.4s ease both;
+}
+
+.product-card {
+  animation: fade-in-up 0.35s ease both;
+}
+
+.featured-section {
+  animation: fade-in-up 0.4s ease both;
+}
+
+.promo-grid {
+  animation: fade-in-up 0.4s ease both;
+}
+
+.app-footer-minimal {
+  animation: fade-in 0.5s ease both;
+}
+
+.category-btn {
+  transition: background-color 0.2s, color 0.2s, transform 0.15s;
+}
+
+.category-btn:active {
+  transform: scale(0.95);
+}
+
+.promo-grid-landscape, .promo-grid-square {
+  transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94), filter 0.35s ease;
+}
+
+.promo-grid-landscape:hover, .promo-grid-square:hover {
+  transform: scale(0.98);
+  filter: brightness(0.92);
+}
+
+.sort-modal-overlay {
+  animation: fade-in 0.2s ease both;
+}
+
+.sort-modal-sheet {
+  animation: modal-slide-up 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+.store-info-overlay {
+  animation: fade-in 0.2s ease both;
+}
+
+.btn-checkout {
+  transition: transform 0.2s, background-color 0.2s;
+}
+
+.btn-checkout:active {
+  transform: scale(0.97);
+}
+
+.icon-btn {
+  transition: transform 0.2s, background-color 0.2s, color 0.2s;
+}
+
+.icon-btn:active {
+  transform: scale(0.92);
+}
+
+.social-icon-btn {
+  transition: transform 0.25s, color 0.2s;
+}
+
+.social-icon-btn:hover {
+  transform: scale(1.15);
+}
+
+.floating-cart-btn:active {
+  transform: scale(0.95);
+}
+
+.cart-header .btn-close-cart {
+  transition: transform 0.2s, color 0.2s;
+}
+
+.cart-header .btn-close-cart:hover {
+  transform: scale(1.1);
+}
+
+.sort-dropdown-option, .sort-category-pill {
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s, transform 0.15s;
+}
+
+.sort-dropdown-option:active, .sort-category-pill:active {
+  transform: scale(0.97);
+}
 
 /* ===== Preloader ===== */
 .preloader-overlay {
@@ -1506,13 +1741,40 @@ body {
   background: var(--bg-primary);
 }
 
-.preloader-spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid var(--border-color);
-  border-top-color: var(--accent-green);
+.preloader-ring {
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 50%;
-  animation: preloader-rotate 0.7s linear infinite;
+  position: relative;
+}
+
+.preloader-ring::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 4px solid var(--border-color);
+  border-top-color: var(--accent-green);
+  animation: preloader-rotate 0.8s linear infinite;
+}
+
+.preloader-logo-wrapper {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--bg-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.preloader-logo {
+  object-fit: contain;
 }
 
 @keyframes preloader-rotate {

@@ -7,6 +7,7 @@ import MasonryGrid from "@/components/MasonryGrid";
 import ProductCard from "@/components/ProductCard";
 import ProductModal from "@/components/ProductModal";
 import Cart from "@/components/Cart";
+import TemplateInfoModal from "@/components/TemplateInfoModal";
 
 export default function CatalogContainer({ initialProducts, storeConfig }) {
   // ── Init cart from localStorage ──
@@ -25,6 +26,7 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
   const [toast, setToast] = useState(null);
   const toastTimeoutRef = useRef(null);
   const catalogRef = useRef(null);
+  const offersRef = useRef(null);
 
   useEffect(() => {
     startTransition(() => {
@@ -99,25 +101,40 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
     return Array.from(new Set(initialProducts.map((p) => p.category)));
   }, [initialProducts]);
 
+  const scrollInProgressRef = useRef(false);
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("featured");
 
   const handleCategoryChange = useCallback((cat) => {
     setActiveCategory(cat);
-    setTimeout(() => {
-      catalogRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 100);
   }, []);
 
   const handleSearchChange = useCallback((q) => {
     setSearchQuery(q);
-    if (q) {
+    if (q && !scrollInProgressRef.current) {
+      scrollInProgressRef.current = true;
       setTimeout(() => {
         catalogRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-      }, 100);
+        scrollInProgressRef.current = false;
+      }, 350);
     }
   }, []);
+
+  // ── Only scroll to catalog when category actually changes ──
+  const prevCategoryRef = useRef(activeCategory);
+  useEffect(() => {
+    if (activeCategory !== prevCategoryRef.current) {
+      prevCategoryRef.current = activeCategory;
+      if (!scrollInProgressRef.current) {
+        scrollInProgressRef.current = true;
+        setTimeout(() => {
+          catalogRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+          scrollInProgressRef.current = false;
+        }, 350);
+      }
+    }
+  }, [activeCategory]);
 
   // ── Filter + sort logic ──
   const sortedProducts = useMemo(() => {
@@ -210,9 +227,21 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
     return initialProducts.filter((p) => p.offer).map((p) => ({ ...p, ratioClass: "ratio-square" }));
   }, [initialProducts]);
 
-  const visibleProducts = sortedProducts.slice(0, visibleLimit);
-
   const [selectedProduct, setSelectedProduct] = useState(null);
+
+  const handlePromoClick = useCallback((index) => {
+    const links = storeConfig.promoLinks || [];
+    const link = links[index];
+    if (!link) return;
+    if (link.type === "section" && link.target === "offers") {
+      offersRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else if (link.type === "product") {
+      const product = initialProducts.find((p) => p.id === link.target);
+      if (product) setSelectedProduct(product);
+    }
+  }, [storeConfig, initialProducts]);
+
+  const visibleProducts = sortedProducts.slice(0, visibleLimit);
 
   return (
     <>
@@ -237,17 +266,17 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
       <main className="main-container">
         {promoBanners[0] && (
           <div className="promo-grid">
-            <div className="promo-grid-landscape">
+            <div className="promo-grid-landscape" onClick={() => handlePromoClick(0)} style={{ cursor: "pointer" }}>
               <Image src={promoBanners[0]} alt="Promotion" fill className="promo-grid-img" sizes="(max-width: 768px) 100vw, 50vw" />
             </div>
             <div className="promo-grid-squares">
               {promoBanners[1] && (
-                <div className="promo-grid-square">
+                <div className="promo-grid-square" onClick={() => handlePromoClick(1)} style={{ cursor: "pointer" }}>
                   <Image src={promoBanners[1]} alt="Promotion" fill className="promo-grid-img" sizes="(max-width: 768px) 50vw, 25vw" />
                 </div>
               )}
               {promoBanners[2] && (
-                <div className="promo-grid-square">
+                <div className="promo-grid-square" onClick={() => handlePromoClick(2)} style={{ cursor: "pointer" }}>
                   <Image src={promoBanners[2]} alt="Promotion" fill className="promo-grid-img" sizes="(max-width: 768px) 50vw, 25vw" />
                 </div>
               )}
@@ -256,7 +285,7 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
         )}
 
         {offerProducts.length > 0 && (
-          <section className="featured-section">
+          <section className="featured-section" ref={offersRef}>
             <h2 className="featured-title">
               Flash Offers
             </h2>
@@ -300,10 +329,14 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
                   className="category-btn active"
                   onClick={() => {
                     setSearchQuery("");
-                    setActiveCategory("all");
+                    handleCategoryChange("all");
                   }}
-                  style={{ marginTop: "1.5rem" }}
+                  style={{ marginTop: "1.5rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}
                 >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
                   Clear Filters
                 </button>
               )}
@@ -338,30 +371,35 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
         onAddToCart={handleAddToCart}
       />
 
+      <TemplateInfoModal />
+
       <style jsx global>{`
         .promo-grid {
           display: grid;
-          grid-template-columns: 2fr 1fr;
+          grid-template-columns: 1fr;
           gap: 0.5rem;
-          margin: 0 0 2rem 0;
+          margin: 0 0 1.25rem 0;
+          container-type: inline-size;
         }
 
         .promo-grid-landscape {
           position: relative;
+          aspect-ratio: 16 / 9;
           border-radius: var(--radius-md);
           overflow: hidden;
           background: var(--bg-secondary);
         }
 
         .promo-grid-squares {
-          display: flex;
-          flex-direction: column;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
           gap: 0.5rem;
+          width: auto;
         }
 
         .promo-grid-square {
           position: relative;
-          flex: 1;
+          aspect-ratio: 1 / 1;
           border-radius: var(--radius-md);
           overflow: hidden;
           background: var(--bg-secondary);
@@ -373,31 +411,30 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
 
         @media (min-width: 769px) {
           .promo-grid {
-            height: 512px;
-            grid-template-rows: 1fr;
-          }
-        }
-
-        @media (max-width: 768px) {
-          .promo-grid {
-            grid-template-columns: 1fr;
+            grid-template-columns: 1fr auto;
             gap: 0.5rem;
-            margin: 0 0 1.25rem 0;
+            margin: 0 0 2rem 0;
           }
 
           .promo-grid-landscape {
-            aspect-ratio: 16 / 9;
+            min-width: 0;
           }
 
           .promo-grid-squares {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+            display: flex;
+            flex-direction: column;
             gap: 0.5rem;
           }
 
           .promo-grid-square {
-            aspect-ratio: 1 / 1;
-            flex: none;
+            flex: 1;
+            width: 100%;
+          }
+
+          @container (min-width: 0px) {
+            .promo-grid-squares {
+              width: calc((9 / 41) * 100cqw - 0.3049rem);
+            }
           }
         }
       `}</style>
@@ -420,8 +457,25 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
         <div className="footer-bottom-row">
           <div className="app-footer-copyright">
             &copy; {new Date().getFullYear()} Whatalog. All rights reserved.
+            <br />
+            <button
+              className="footer-template-link"
+              onClick={() => window.dispatchEvent(new CustomEvent("open-template-modal"))}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              What is this? — Template info
+            </button>
           </div>
           <div className="social-links">
+            <a href="https://github.com/lazzzarito/Whatalog" target="_blank" rel="noopener noreferrer" className="social-icon-btn" title="GitHub">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+              </svg>
+            </a>
             <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="social-icon-btn" title="Instagram">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
@@ -432,11 +486,6 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
             <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="social-icon-btn" title="Facebook">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
-              </svg>
-            </a>
-            <a href="https://t.me" target="_blank" rel="noopener noreferrer" className="social-icon-btn" title="Telegram">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21.198 2.443a.5.5 0 0 0-.548.067L2.025 14.055a.5.5 0 0 0 .105.902l4.96 1.913 1.685 4.67a.5.5 0 0 0 .829.18l2.522-2.522 4.528 3.483a.5.5 0 0 0 .802-.272l3.75-19.5a.5.5 0 0 0-.208-.466z" />
               </svg>
             </a>
             <a href={`https://wa.me/${storeConfig.whatsappNumber.replace(/[^0-9+]/g, "")}`} target="_blank" rel="noopener noreferrer" className="social-icon-btn" title="WhatsApp">

@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 
 export default function Preloader({ children }) {
-  // ── Show spinner for at least 400ms before revealing content ──
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
@@ -15,7 +15,18 @@ export default function Preloader({ children }) {
     <>
       {!loaded && (
         <div className="preloader-overlay">
-          <div className="preloader-spinner" />
+          <div className="preloader-ring">
+            <div className="preloader-logo-wrapper">
+              <Image
+                src="/images/logo.webp"
+                alt="Logo"
+                width={56}
+                height={56}
+                className="preloader-logo"
+                priority
+              />
+            </div>
+          </div>
         </div>
       )}
       <div style={{ opacity: loaded ? 1 : 0, transition: "opacity 0.3s ease" }}>
