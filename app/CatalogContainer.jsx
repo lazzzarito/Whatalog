@@ -1,14 +1,18 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo, useCallback, startTransition } from "react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import FilterHeader from "@/components/FilterHeader";
 import MasonryGrid from "@/components/MasonryGrid";
 import ProductCard from "@/components/ProductCard";
-import ProductModal from "@/components/ProductModal";
-import Cart from "@/components/Cart";
-import PromoModal from "@/components/PromoModal";
-import TemplateInfoModal from "@/components/TemplateInfoModal";
+
+const ProductModal = dynamic(() => import("@/components/ProductModal"), { ssr: false });
+const Cart = dynamic(() => import("@/components/Cart"), { ssr: false });
+const QuickBuyModal = dynamic(() => import("@/components/QuickBuyModal"), { ssr: false });
+const PromoModal = dynamic(() => import("@/components/PromoModal"), { ssr: false });
+const OfferModal = dynamic(() => import("@/components/OfferModal"), { ssr: false });
+const TemplateInfoModal = dynamic(() => import("@/components/TemplateInfoModal"), { ssr: false });
 
 export default function CatalogContainer({ initialProducts, storeConfig }) {
   // ── Init cart from localStorage ──
@@ -25,9 +29,11 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
   });
   const [isClient, setIsClient] = useState(false);
   const [toast, setToast] = useState(null);
+  const [toastType, setToastType] = useState("success");
   const toastTimeoutRef = useRef(null);
   const catalogRef = useRef(null);
   const offersRef = useRef(null);
+  const persistTimerRef = useRef(null);
 
   useEffect(() => {
     startTransition(() => {
@@ -35,9 +41,18 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
     });
   }, []);
 
-  // ── Cart persistence ──
+  // ── Cart persistence (debounced) ──
   const saveCart = (items) => {
     setCartItems(items);
+    if (persistTimerRef.current) clearTimeout(persistTimerRef.current);
+    persistTimerRef.current = setTimeout(() => {
+      localStorage.setItem("whatalog_cart", JSON.stringify(items));
+      persistTimerRef.current = null;
+    }, 300);
+  };
+
+  const persistCartImmediately = (items) => {
+    if (persistTimerRef.current) clearTimeout(persistTimerRef.current);
     localStorage.setItem("whatalog_cart", JSON.stringify(items));
   };
 
@@ -46,9 +61,16 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
     localStorage.removeItem("whatalog_cart");
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (persistTimerRef.current) clearTimeout(persistTimerRef.current);
+    };
+  }, []);
+
   // ── Toast notifications ──
-  const showToast = (message) => {
+  const showToast = (message, type = "success") => {
     setToast(message);
+    setToastType(type);
     window.clearTimeout(toastTimeoutRef.current);
     toastTimeoutRef.current = window.setTimeout(() => {
       setToast(null);
@@ -230,6 +252,8 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
 
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedPromo, setSelectedPromo] = useState(null);
+  const [quickBuyProduct, setQuickBuyProduct] = useState(null);
+  const [showOffers, setShowOffers] = useState(false);
 
   const handlePromoClick = useCallback((index) => {
     const links = storeConfig.promoLinks || [];
@@ -266,7 +290,7 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
       />
 
       {toast && (
-        <div className="toast-notification success">
+        <div className={`toast-notification ${toastType}`}>
           <span>{toast}</span>
         </div>
       )}
@@ -276,17 +300,17 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
         {promoBanners[0] && (
           <div className="promo-grid">
             <div className="promo-grid-landscape" onClick={() => handlePromoClick(0)} style={{ cursor: "pointer" }}>
-              <Image src={promoBanners[0]} alt="Promotion" fill className="promo-grid-img" sizes="(max-width: 768px) 100vw, 50vw" />
+              <Image src={promoBanners[0]} alt="Promotion" fill className="promo-grid-img" sizes="(max-width: 768px) 100vw, 50vw" priority />
             </div>
             <div className="promo-grid-squares">
               {promoBanners[1] && (
                 <div className="promo-grid-square" onClick={() => handlePromoClick(1)} style={{ cursor: "pointer" }}>
-                  <Image src={promoBanners[1]} alt="Promotion" fill className="promo-grid-img" sizes="(max-width: 768px) 50vw, 25vw" />
+                  <Image src={promoBanners[1]} alt="Promotion" fill className="promo-grid-img" sizes="(max-width: 768px) 50vw, 25vw" priority />
                 </div>
               )}
               {promoBanners[2] && (
                 <div className="promo-grid-square" onClick={() => handlePromoClick(2)} style={{ cursor: "pointer" }}>
-                  <Image src={promoBanners[2]} alt="Promotion" fill className="promo-grid-img" sizes="(max-width: 768px) 50vw, 25vw" />
+                  <Image src={promoBanners[2]} alt="Promotion" fill className="promo-grid-img" sizes="(max-width: 768px) 50vw, 25vw" priority />
                 </div>
               )}
             </div>
@@ -297,14 +321,26 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
           <section className="featured-section" ref={offersRef}>
             <h2 className="featured-title">
               Flash Offers
+              <span className="featured-title-line" />
+              <button
+                className="btn-offers-expand"
+                onClick={() => setShowOffers(true)}
+                title="View all offers"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+              </button>
             </h2>
             <div className="featured-grid">
-              {offerProducts.map((product) => (
+              {offerProducts.slice(0, 4).map((product) => (
                 <ProductCard
                   key={product.id}
                   product={product}
                   onAddToCart={handleAddToCart}
                   onOpenDetails={setSelectedProduct}
+                  priority
                 />
               ))}
             </div>
@@ -312,15 +348,30 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
         )}
 
         <div ref={catalogRef}>
-          <h2 className="featured-title" style={{ marginTop: offerProducts.length > 0 ? "2.5rem" : 0 }}>Available Products</h2>
+          <h2 className="featured-title" style={{ marginTop: offerProducts.length > 0 ? "2.5rem" : 0 }}>
+            Available Products
+            <span className="featured-title-line" />
+            <button
+              className="btn-filter-catalog"
+              onClick={() => window.dispatchEvent(new CustomEvent("open-sort-menu"))}
+              title="Filters"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="4" y1="6" x2="20" y2="6"></line>
+                <line x1="4" y1="12" x2="16" y2="12"></line>
+                <line x1="4" y1="18" x2="12" y2="18"></line>
+              </svg>
+            </button>
+          </h2>
           {visibleProducts.length > 0 ? (
             <MasonryGrid>
-              {visibleProducts.map((product) => (
+              {visibleProducts.map((product, i) => (
                 <ProductCard
                   key={product.id}
                   product={product}
                   onAddToCart={handleAddToCart}
                   onOpenDetails={setSelectedProduct}
+                  priority={i < 4}
                 />
               ))}
             </MasonryGrid>
@@ -378,7 +429,17 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
         product={selectedProduct}
         onClose={() => setSelectedProduct(null)}
         onAddToCart={handleAddToCart}
+        storeConfig={storeConfig}
+        onQuickBuy={setQuickBuyProduct}
       />
+
+      {quickBuyProduct && (
+        <QuickBuyModal
+          product={quickBuyProduct}
+          onClose={() => setQuickBuyProduct(null)}
+          storeConfig={storeConfig}
+        />
+      )}
 
       <PromoModal
         promo={selectedPromo}
@@ -387,6 +448,15 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
         onAddToCart={handleAddToCart}
         onOpenDetails={setSelectedProduct}
       />
+
+      {showOffers && (
+        <OfferModal
+          products={offerProducts}
+          onClose={() => setShowOffers(false)}
+          onAddToCart={handleAddToCart}
+          onOpenDetails={setSelectedProduct}
+        />
+      )}
 
       <TemplateInfoModal />
 
@@ -454,6 +524,99 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
             }
           }
         }
+
+        .btn-offers-expand {
+          background: var(--bg-secondary);
+          border: 1px solid var(--border-color);
+          color: var(--accent-green);
+          width: 26px;
+          height: 26px;
+          border-radius: 50%;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          transition: all 0.2s;
+          margin-left: auto;
+        }
+
+        .btn-offers-expand:hover {
+          background: var(--accent-green);
+          color: #fff;
+          border-color: var(--accent-green);
+          transform: scale(1.08);
+        }
+
+        .btn-filter-catalog {
+          background: var(--bg-secondary);
+          border: 1px solid var(--border-color);
+          color: var(--text-secondary);
+          width: 28px;
+          height: 28px;
+          border-radius: 8px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          transition: all 0.2s;
+        }
+
+        .btn-filter-catalog:hover {
+          background: var(--border-color);
+          color: var(--text-primary);
+        }
+
+        .featured-title-line {
+          flex: 1;
+          height: 1px;
+          background: var(--border-color);
+        }
+
+        .footer-info-buttons {
+          display: flex;
+          gap: 0.5rem;
+          justify-content: center;
+          margin-bottom: 0.75rem;
+        }
+
+        .footer-info-btn {
+          display: flex;
+          align-items: center;
+          gap: 0.35rem;
+          background: var(--bg-secondary);
+          border: 1px solid var(--border-color);
+          color: var(--text-secondary);
+          padding: 0.45rem 0.85rem;
+          border-radius: 20px;
+          font-size: 0.8rem;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .footer-info-btn:hover {
+          background: var(--border-color);
+          color: var(--text-primary);
+        }
+
+        .footer-made-by {
+          font-size: 0.78rem;
+          color: var(--text-secondary);
+          text-align: center;
+          margin-top: 0.5rem;
+        }
+
+        .footer-made-by a {
+          color: var(--accent-green);
+          text-decoration: none;
+          font-weight: 600;
+        }
+
+        .footer-made-by a:hover {
+          text-decoration: underline;
+        }
       `}</style>
 
       {/* ── Footer with map & social links ── */}
@@ -472,22 +635,7 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
         </div>
 
         <div className="footer-bottom-row">
-          <div className="app-footer-copyright">
-            &copy; {new Date().getFullYear()} Whatalog. All rights reserved.
-            <br />
-            <button
-              className="footer-template-link"
-              onClick={() => window.dispatchEvent(new CustomEvent("open-template-modal"))}
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="16" x2="12" y2="12"></line>
-                <line x1="12" y1="8" x2="12.01" y2="8"></line>
-              </svg>
-              What is this? — Template info
-            </button>
-          </div>
-          <div className="social-links">
+          <div className="social-links" style={{ justifyContent: "center", marginBottom: "0.75rem" }}>
             <a href="https://github.com/lazzzarito/Whatalog" target="_blank" rel="noopener noreferrer" className="social-icon-btn" title="GitHub">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
@@ -511,6 +659,34 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
               </svg>
             </a>
           </div>
+
+          <div className="footer-info-buttons">
+            <button className="footer-info-btn" onClick={() => window.dispatchEvent(new CustomEvent("open-store-info"))}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              Store Info
+            </button>
+            <button className="footer-info-btn" onClick={() => window.dispatchEvent(new CustomEvent("open-template-modal"))}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              Template Info
+            </button>
+          </div>
+
+          <div className="app-footer-copyright">
+            &copy; {new Date().getFullYear()} Whatalog. All rights reserved.
+          </div>
+
+          <p className="footer-made-by">
+            Made with <span style={{ color: "#e74c3c" }}>❤️‍🔥</span> by{" "}
+            <a href="https://1azarito.vercel.app" target="_blank" rel="noopener noreferrer">1azarito</a>
+          </p>
         </div>
       </footer>
     </>

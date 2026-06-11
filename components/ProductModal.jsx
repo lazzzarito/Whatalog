@@ -3,8 +3,9 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { lockBodyScroll } from "@/lib/scroll-lock";
+import { useHistoryPopup } from "@/lib/use-history-popup";
 
-export default function ProductModal({ product, onClose, onAddToCart }) {
+export default function ProductModal({ product, onClose, onAddToCart, storeConfig, onQuickBuy }) {
   // ── Track active image index for gallery ──
   const [activeImage, setActiveImage] = useState(0);
 
@@ -14,6 +15,8 @@ export default function ProductModal({ product, onClose, onAddToCart }) {
     }
   }, [product]);
 
+  useHistoryPopup(!!product, onClose);
+
   if (!product) return null;
 
   const { name, priceUSD, originalPrice, category, images, description, contentHtml, attributes } = product;
@@ -21,26 +24,18 @@ export default function ProductModal({ product, onClose, onAddToCart }) {
   const hasDiscount = originalPrice && originalPrice > priceUSD;
   const hasAttributes = attributes && Object.keys(attributes).length > 0;
 
-  // ── Share buttons: WhatsApp, Facebook, Twitter, copy link ──
-  const shareProduct = (platform) => {
+  const handleShare = async () => {
     const text = `Check this out: ${name} - $${priceUSD} USD`;
     const url = window.location.href;
-
-    const shareLinks = {
-      whatsapp: `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`,
-      facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
-      twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
-      copy: () => {
-        navigator.clipboard.writeText(text + ' ' + url);
-        alert("Link copied to clipboard");
-      }
-    };
-
-    if (platform === 'copy') {
-      shareLinks.copy();
+    if (navigator.share) {
+      await navigator.share({ title: name, text, url }).catch(() => {});
     } else {
-      window.open(shareLinks[platform], '_blank');
+      window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`, '_blank');
     }
+  };
+
+  const handleDirectBuy = () => {
+    onQuickBuy(product);
   };
 
   return (
@@ -108,30 +103,6 @@ export default function ProductModal({ product, onClose, onAddToCart }) {
                   </div>
                 )}
 
-                <div className="product-modal-share-buttons">
-                  <button className="share-btn" title="Share on WhatsApp" onClick={() => shareProduct('whatsapp')}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-                    </svg>
-                  </button>
-                  <button className="share-btn" title="Share on Facebook" onClick={() => shareProduct('facebook')}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
-                    </svg>
-                  </button>
-                  <button className="share-btn" title="Share on Twitter" onClick={() => shareProduct('twitter')}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M4 4l6.5 8.5L4 20h2l5.5-7 4.5 7h5l-7-9.5L20 4h-2l-5 6.5L9 4H4z" />
-                    </svg>
-                  </button>
-                  <button className="share-btn" title="Copy link" onClick={() => shareProduct('copy')}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                    </svg>
-                  </button>
-                </div>
-
                 {description && <p className="product-modal-brief">{description}</p>}
 
                 <div className="product-modal-details-html" dangerouslySetInnerHTML={{ __html: contentHtml }} />
@@ -140,13 +111,29 @@ export default function ProductModal({ product, onClose, onAddToCart }) {
           </div>
 
           <div className="product-modal-footer">
-            <button className="btn-checkout" onClick={() => { onAddToCart(product); onClose(); }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "0.4rem" }}>
-                <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
-                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-              </svg>
-              Add to Cart
-            </button>
+            <div className="product-modal-footer-row">
+              <button className="btn-share" onClick={handleShare} title="Share">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                </svg>
+              </button>
+              <button className="btn-direct-buy" onClick={handleDirectBuy}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                  <line x1="3" y1="6" x2="21" y2="6" />
+                  <path d="M16 10a4 4 0 0 1-8 0" />
+                </svg>
+                Buy
+              </button>
+              <button className="btn-add-cart" onClick={() => { onAddToCart(product); onClose(); }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
+                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                </svg>
+                Add to Cart
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -173,7 +160,7 @@ export default function ProductModal({ product, onClose, onAddToCart }) {
           border-radius: var(--radius-lg) var(--radius-lg) 0 0;
           width: 100%;
           max-width: 100%;
-          max-height: 90vh;
+          max-height: 90svh;
           box-shadow: var(--shadow-lg);
           position: relative;
           animation: modal-slide-up 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
@@ -352,35 +339,6 @@ export default function ProductModal({ product, onClose, onAddToCart }) {
           color: var(--text-primary);
         }
 
-        .product-modal-share-buttons {
-          display: flex;
-          gap: 0.75rem;
-          justify-content: flex-start;
-          margin-bottom: 1rem;
-        }
-
-        .share-btn {
-          background: #1a1a1a;
-          border: 1.5px solid #333333;
-          color: #ffffff;
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          font-size: 1.1rem;
-          font-weight: 600;
-          transition: all 0.2s;
-        }
-
-        .share-btn:hover {
-          background: #2a2a2a;
-          border-color: #444444;
-          transform: scale(1.05);
-        }
-
         .product-modal-brief {
           font-size: 1rem;
           line-height: 1.5;
@@ -405,18 +363,68 @@ export default function ProductModal({ product, onClose, onAddToCart }) {
         .product-modal-details-html li { list-style-type: disc; }
 
         .product-modal-footer {
-          padding: 1.5rem 2.5rem 2.5rem 2.5rem;
-          border-top: none;
-          background: transparent;
-          display: flex;
-          flex-direction: column;
-          gap: 1rem;
+          padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
+          border-top: 1px solid var(--border-color);
+          background: var(--bg-primary);
           flex-shrink: 0;
           position: relative;
           z-index: 5;
         }
 
-        .product-modal-footer .btn-checkout { width: 100%; }
+        .product-modal-footer-row {
+          display: flex;
+          gap: 0.5rem;
+        }
+
+        .product-modal-footer-row button {
+          flex: 1;
+          padding: 0.65rem 0.75rem;
+          border-radius: 30px;
+          font-size: 0.75rem;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.35rem;
+          cursor: pointer;
+          transition: all 0.2s;
+          border: 1.5px solid var(--border-color);
+          background: var(--bg-secondary);
+          color: var(--text-primary);
+          white-space: nowrap;
+        }
+
+        .product-modal-footer-row .btn-share {
+          flex: 0 0 auto;
+          width: 2.5rem;
+          height: 2.5rem;
+          padding: 0;
+          border-radius: 50%;
+        }
+
+        .product-modal-footer-row .btn-direct-buy {
+          flex: 0 0 auto;
+          padding: 0.65rem 0.9rem;
+        }
+
+        .product-modal-footer-row button:hover {
+          background: var(--border-color);
+        }
+
+        .product-modal-footer-row .btn-add-cart {
+          background: var(--text-primary) !important;
+          color: var(--accent-light) !important;
+          border-color: var(--text-primary) !important;
+        }
+
+        .product-modal-footer-row .btn-add-cart:hover {
+          opacity: 0.9;
+        }
+
+        .product-modal-footer-row .btn-direct-buy svg,
+        .product-modal-footer-row .btn-share svg {
+          flex-shrink: 0;
+        }
       `}</style>
     </>
   );

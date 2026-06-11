@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 
-export default function ProductCard({ product, onAddToCart, onOpenDetails }) {
+export default function ProductCard({ product, onAddToCart, onOpenDetails, priority }) {
   // ── Extract product data + check for discount ──
   const { name, priceUSD, originalPrice, category, image, description, ratioClass } = product;
   const hasDiscount = originalPrice && originalPrice > priceUSD;
@@ -19,7 +19,8 @@ export default function ProductCard({ product, onAddToCart, onOpenDetails }) {
           fill
           sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 33vw"
           className="product-card-image"
-          loading="lazy"
+          loading={priority ? undefined : "lazy"}
+          priority={priority || undefined}
         />
         {hasDiscount && <span className="product-card-badge">OFFER</span>}
       </div>

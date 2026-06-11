@@ -3,6 +3,7 @@
 import { useRef, useEffect, useState } from "react";
 import Image from "next/image";
 import { lockBodyScroll } from "@/lib/scroll-lock";
+import { useHistoryPopup } from "@/lib/use-history-popup";
 import LegalInfoModal from "@/components/LegalInfoModal";
 
 export default function FilterHeader({
@@ -70,6 +71,23 @@ export default function FilterHeader({
       };
     }
   }, [showSortMenu]);
+
+  useHistoryPopup(showStoreInfo, () => setShowStoreInfo(false));
+  useHistoryPopup(showSortMenu, () => setShowSortMenu(false));
+
+  // ── Listen for "open-store-info" custom event from footer ──
+  useEffect(() => {
+    const handler = () => setShowStoreInfo(true);
+    window.addEventListener("open-store-info", handler);
+    return () => window.removeEventListener("open-store-info", handler);
+  }, []);
+
+  // ── Listen for "open-sort-menu" custom event from catalog ──
+  useEffect(() => {
+    const handler = () => setShowSortMenu(true);
+    window.addEventListener("open-sort-menu", handler);
+    return () => window.removeEventListener("open-sort-menu", handler);
+  }, []);
 
   return (
     <>
@@ -332,134 +350,141 @@ export default function FilterHeader({
               </svg>
             </button>
 
-            <div className="store-info-header">
-              <h2 className="store-info-title">{storeConfig.name}</h2>
-              <span className="store-info-badge">Online Catalog</span>
-            </div>
+            <div className="store-info-scroll">
+              <div className="store-info-header">
+                <h2 className="store-info-title">{storeConfig.name}</h2>
+                <span className="store-info-badge">Online Catalog</span>
+              </div>
 
-            <div className="store-info-body">
-              <div className="store-info-item">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                  <circle cx="12" cy="10" r="3"></circle>
-                </svg>
-                <div>
-                  <strong>Location</strong>
-                  <p>{storeConfig.location}</p>
+              <div className="store-info-body">
+                <div className="store-info-item">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                    <circle cx="12" cy="10" r="3"></circle>
+                  </svg>
+                  <div>
+                    <strong>Location</strong>
+                    <p>{storeConfig.location}</p>
+                  </div>
+                </div>
+
+                <div className="store-info-item">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                  </svg>
+                  <div>
+                    <strong>WhatsApp</strong>
+                    <p>{storeConfig.whatsappNumber}</p>
+                  </div>
+                </div>
+
+                <div className="store-info-item">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                  </svg>
+                  <div>
+                    <strong>Hours</strong>
+                    <p>Monday - Saturday, 9:00 AM – 6:00 PM</p>
+                  </div>
+                </div>
+
+                <div className="store-info-item">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="1" y="3" width="15" height="13"></rect>
+                    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                    <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                    <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                  </svg>
+                  <div>
+                    <strong>Deliveries</strong>
+                    <p>Coordinated shipping in Miami area</p>
+                  </div>
                 </div>
               </div>
 
-              <div className="store-info-item">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-                </svg>
-                <div>
-                  <strong>WhatsApp</strong>
-                  <p>{storeConfig.whatsappNumber}</p>
-                </div>
+              <div className="store-info-howto">
+                <h3>How to buy?</h3>
+                <ol>
+                  <li>Browse the catalog and tap + to add products.</li>
+                  <li>Open My Cart (floating button below).</li>
+                  <li>Tap Confirm via WhatsApp to send us your order.</li>
+                </ol>
               </div>
 
-              <div className="store-info-item">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <polyline points="12 6 12 12 16 14"></polyline>
-                </svg>
-                <div>
-                  <strong>Hours</strong>
-                  <p>Monday - Saturday, 9:00 AM – 6:00 PM</p>
-                </div>
+              <div className="store-info-social">
+                <a
+                  href="https://github.com/lazzzarito/Whatalog"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="social-icon-btn"
+                  title="GitHub"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+                  </svg>
+                </a>
+                <a
+                  href={`https://wa.me/${storeConfig.whatsappNumber.replace(/[^0-9+]/g, "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="social-icon-btn"
+                  title="WhatsApp"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                  </svg>
+                </a>
+                <a
+                  href="https://facebook.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="social-icon-btn"
+                  title="Facebook"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M18 2h-3a6 6 0 0 0-6 6v3H9v4h3v8h4v-8h3l1-4h-4V8a1 1 0 0 1 1-1h3z"></path>
+                  </svg>
+                </a>
+                <a
+                  href="https://instagram.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="social-icon-btn"
+                  title="Instagram"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                    <circle cx="17.5" cy="6.5" r="1.5"></circle>
+                  </svg>
+                </a>
               </div>
 
-              <div className="store-info-item">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="1" y="3" width="15" height="13"></rect>
-                  <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
-                  <circle cx="5.5" cy="18.5" r="2.5"></circle>
-                  <circle cx="18.5" cy="18.5" r="2.5"></circle>
-                </svg>
-                <div>
-                  <strong>Deliveries</strong>
-                  <p>Coordinated shipping in Miami area</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="store-info-howto">
-              <h3>How to buy?</h3>
-              <ol>
-                <li>Browse the catalog and tap + to add products.</li>
-                <li>Open My Cart (floating button below).</li>
-                <li>Tap Confirm via WhatsApp to send us your order.</li>
-              </ol>
-            </div>
-
-            <div className="store-info-social">
               <a
-                href="https://github.com/lazzzarito/Whatalog"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="social-icon-btn"
-                title="GitHub"
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
-                </svg>
-              </a>
-              <a
+                className="store-info-wa-btn"
                 href={`https://wa.me/${storeConfig.whatsappNumber.replace(/[^0-9+]/g, "")}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="social-icon-btn"
-                title="WhatsApp"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
                 </svg>
+                Contact us on WhatsApp
               </a>
-              <a
-                href="https://facebook.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="social-icon-btn"
-                title="Facebook"
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M18 2h-3a6 6 0 0 0-6 6v3H9v4h3v8h4v-8h3l1-4h-4V8a1 1 0 0 1 1-1h3z"></path>
+
+              <button className="store-info-legal-btn" onClick={() => setShowLegalInfo(true)}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
                 </svg>
-              </a>
-              <a
-                href="https://instagram.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="social-icon-btn"
-                title="Instagram"
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                  <circle cx="17.5" cy="6.5" r="1.5"></circle>
-                </svg>
-              </a>
+                Legal Info — Cookies, Privacy & Terms
+              </button>
+
+              <p style={{ fontSize: "0.75rem", color: "var(--text-secondary)", textAlign: "center", marginTop: "1.5rem" }}>
+                Made with <span style={{ color: "#e74c3c" }}>❤️‍🔥</span> by{" "}
+                <a href="https://1azarito.vercel.app" target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent-green)", textDecoration: "none", fontWeight: 600 }}>1azarito</a>
+              </p>
             </div>
-
-            <a
-              className="store-info-wa-btn"
-              href={`https://wa.me/${storeConfig.whatsappNumber.replace(/[^0-9+]/g, "")}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-              </svg>
-              Contact us on WhatsApp
-            </a>
-
-            <button className="store-info-legal-btn" onClick={() => setShowLegalInfo(true)}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-              </svg>
-              Legal Info — Cookies, Privacy & Terms
-            </button>
           </div>
         </div>
       )}

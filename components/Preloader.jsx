@@ -1,14 +1,22 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 
 export default function Preloader({ children }) {
   const [loaded, setLoaded] = useState(false);
+  const readyRef = useRef(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoaded(true), 400);
-    return () => clearTimeout(timer);
+    if (readyRef.current) return;
+    readyRef.current = true;
+    requestAnimationFrame(() => setLoaded(true));
+  }, []);
+
+  useEffect(() => {
+    const handler = (e) => e.preventDefault();
+    document.addEventListener("contextmenu", handler);
+    return () => document.removeEventListener("contextmenu", handler);
   }, []);
 
   return (
