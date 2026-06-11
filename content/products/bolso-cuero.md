@@ -7,6 +7,7 @@ category: "Accessories"
 image: "bolso_cuero.webp"
 description: "Elegant camel-color shoulder bag. Its structured design and gold hardware give it a sophisticated look perfect for everyday wear."
 featured: false
+promo: "accessories-edit"
 ---
 A timeless classic to organize your belongings in style. Goes with everything.
 - **Material:** High-quality textured PU leather.

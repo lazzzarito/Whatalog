@@ -191,6 +191,7 @@ body {
   align-items: flex-end;
   justify-content: center;
   padding: 0;
+  touch-action: none;
 }
 
 .sort-modal-sheet {
@@ -892,6 +893,7 @@ body {
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease;
+  touch-action: none;
 }
 
 .cart-overlay.open {
@@ -943,27 +945,37 @@ body {
 
 .toast-notification {
   position: fixed;
-  left: 50%;
-  bottom: 5.2rem;
-  transform: translateX(-50%);
+  top: 4.5rem;
+  right: 1rem;
   z-index: 210;
   background: var(--accent-green);
   border: none;
   border-radius: 999px;
-  padding: 0.9rem 1.2rem;
+  padding: 0.85rem 1.25rem;
   color: #fff;
-  font-size: 0.94rem;
-  animation: slide-in-bottom 0.24s ease;
+  font-size: 0.9rem;
+  max-width: calc(100% - 2rem);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  animation: toast-slide-in 0.24s ease;
+  box-shadow: var(--shadow-md);
 }
 
-@keyframes slide-in-bottom {
+@media (min-width: 480px) {
+  .toast-notification {
+    max-width: 360px;
+  }
+}
+
+@keyframes toast-slide-in {
   from {
-    transform: translateX(-50%) translateY(20px);
+    transform: translateX(20px);
     opacity: 0;
   }
 
   to {
-    transform: translateX(-50%) translateY(0);
+    transform: translateX(0);
     opacity: 1;
   }
 }
@@ -1323,6 +1335,7 @@ body {
   justify-content: center;
   padding: 0;
   animation: fade-in 0.2s ease-out;
+  touch-action: none;
 }
 
 @media (min-width: 1024px) {
@@ -1616,6 +1629,117 @@ body {
 .template-btn-pro:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 20px rgba(241, 39, 17, 0.35);
+}
+
+/* ===== Promo Modal ===== */
+.promo-modal-banner {
+  width: 100%;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--bg-secondary);
+  display: flex;
+  justify-content: center;
+}
+
+.promo-modal-banner-img {
+  width: 100%;
+  height: auto;
+  max-height: 45vh;
+  object-fit: contain;
+  display: block;
+}
+
+.promo-modal-banner + .store-info-header {
+  margin-top: 1rem;
+}
+
+.promo-modal-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.promo-modal-product {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.75rem;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.promo-modal-product:hover {
+  background: var(--border-color);
+}
+
+.promo-modal-image-wrapper {
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--bg-primary);
+}
+
+.promo-modal-image {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+
+.promo-modal-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.promo-modal-category {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.promo-modal-name {
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.promo-modal-price {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent-green);
+}
+
+.promo-modal-add {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent-green);
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.promo-modal-add:hover {
+  background: var(--accent-hover);
+  transform: scale(1.05);
+}
+
+.promo-modal-add:active {
+  transform: scale(0.95);
 }
 
 /* ===== Product Modal (inherited) ===== */

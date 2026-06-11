@@ -7,6 +7,7 @@ image: "collar_mariposa.webp"
 description: "Delicate necklace with a butterfly charm in 18K gold plating. Perfect to elevate any casual or formal outfit."
 # Featured products appear first in the default sort
 featured: true
+promo: "summer-fragrances"
 ---
 A minimalist piece rich in symbolism. Ideal as a gift or a treat for yourself.
 - **Material:** High-quality stainless steel with 18K gold plating (tarnish-resistant).

@@ -13,8 +13,8 @@
     "/api/images/promos/square-promo-2.webp"
   ],
   "promoLinks": [
-    { "type": "section", "target": "offers" },
-    { "type": "product", "target": "perfume-rose" },
-    { "type": "product", "target": "reloj-elegante" }
+    { "type": "promo", "target": "summer-fragrances", "title": "Summer Fragrances", "subtitle": "Light & fresh scents for the season" },
+    { "type": "promo", "target": "accessories-edit", "title": "Accessories Edit", "subtitle": "Complete your look with these picks" },
+    { "type": "promo", "target": "leather-essentials", "title": "Leather Essentials", "subtitle": "Timeless pieces, crafted to last" }
   ]
 }

@@ -7,6 +7,7 @@ import MasonryGrid from "@/components/MasonryGrid";
 import ProductCard from "@/components/ProductCard";
 import ProductModal from "@/components/ProductModal";
 import Cart from "@/components/Cart";
+import PromoModal from "@/components/PromoModal";
 import TemplateInfoModal from "@/components/TemplateInfoModal";
 
 export default function CatalogContainer({ initialProducts, storeConfig }) {
@@ -228,13 +229,16 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
   }, [initialProducts]);
 
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedPromo, setSelectedPromo] = useState(null);
 
   const handlePromoClick = useCallback((index) => {
     const links = storeConfig.promoLinks || [];
     const link = links[index];
     if (!link) return;
-    if (link.type === "section" && link.target === "offers") {
-      offersRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (link.type === "promo") {
+      const banners = storeConfig.promoBanners || [];
+      const image = banners[index] || null;
+      setSelectedPromo({ ...link, image });
     } else if (link.type === "product") {
       const product = initialProducts.find((p) => p.id === link.target);
       if (product) setSelectedProduct(product);
@@ -242,6 +246,11 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
   }, [storeConfig, initialProducts]);
 
   const visibleProducts = sortedProducts.slice(0, visibleLimit);
+
+  const promoProducts = useMemo(() => {
+    if (!selectedPromo) return [];
+    return initialProducts.filter((p) => p.promo === selectedPromo.target);
+  }, [selectedPromo, initialProducts]);
 
   return (
     <>
@@ -369,6 +378,14 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
         product={selectedProduct}
         onClose={() => setSelectedProduct(null)}
         onAddToCart={handleAddToCart}
+      />
+
+      <PromoModal
+        promo={selectedPromo}
+        products={promoProducts}
+        onClose={() => setSelectedPromo(null)}
+        onAddToCart={handleAddToCart}
+        onOpenDetails={setSelectedProduct}
       />
 
       <TemplateInfoModal />

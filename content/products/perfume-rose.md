@@ -19,6 +19,8 @@ description: "Wild rose and premium jasmine fragrance. Long-lasting with a delic
 featured: true
 # Shows in "Flash Offers" hero section
 offer: true
+# Promo group (matches promoLinks target)
+promo: "summer-fragrances"
 # Key-value pairs shown in modal & sent via WhatsApp
 attributes:
   Size: "1.7 fl oz (50 ml)"

@@ -103,6 +103,7 @@ offer: true                       # Boolean. Shows product in "Flash Offers" her
 attributes:                       # Key-value pairs displayed in modal & sent in WhatsApp.
   Size: "50 ml"
   Color: "Gold"
+promo: "summer-fragrances"         # String. Groups product into a promo modal (matches promoLinks target).
 ---
 ```
 
@@ -125,6 +126,7 @@ attributes:
   Size: "1.7 fl oz (50 ml)"
   Longevity: "12 hours"
   Type: "Eau de Parfum"
+promo: "summer-fragrances"
 ---
 This perfume is crafted with the finest floral notes. Its minimalist, elegant bottle fits perfectly on any vanity.
 - **Top notes:** Rose petals and jasmine.
@@ -247,6 +249,43 @@ Maximum 3 images:
 If `promoBanners` is empty or undefined, the promo section is not rendered.
 
 You can also use the standalone `<PromoBanner />` component (in `components/PromoBanner.jsx`) which renders a single 16:9 full-width banner.
+
+### Promo Click Behavior (promoLinks)
+
+Each promo banner can be configured to open a promo modal popup showing related products. Configure this in `store-config.json` via the `promoLinks` array:
+
+```json
+"promoLinks": [
+    { "type": "promo", "target": "summer-fragrances", "title": "Summer Fragrances", "subtitle": "Light & fresh scents" },
+    { "type": "promo", "target": "accessories-edit", "title": "Accessories Edit", "subtitle": "Complete your look" },
+    { "type": "promo", "target": "leather-essentials", "title": "Leather Essentials", "subtitle": "Timeless pieces" }
+]
+```
+
+Each entry corresponds to the banner at the same index (0 = landscape, 1 = first square, 2 = second square).
+
+| Field | Type | Description |
+|---|---|---|
+| `type` | `"promo"` | Always set to `"promo"` for modal popups. |
+| `target` | string | Matches the `promo` field in product `.md` frontmatter. All products with the same `promo` value appear in that popup. |
+| `title` | string | Bold heading displayed at the top of the modal. |
+| `subtitle` | string | Smaller text below the title (optional). |
+
+**To associate a product with a promo**, add `promo: "target-name"` to its frontmatter:
+
+```yaml
+---
+id: "perfume-rose"
+name: "Floral Rose Perfume"
+promo: "summer-fragrances"
+---
+```
+
+Products with no `promo` field (or `null`) are not shown in any promo modal.
+
+**Legacy behavior** (still supported):  
+- `{ "type": "product", "target": "product-id" }` — clicking the banner opens the product detail modal.
+- `{ "type": "section", "target": "offers" }` — clicking the banner scrolls to the Flash Offers section.
 
 ---
 

@@ -8,6 +8,7 @@ description: "Classic watch with a white dial and rose gold indices. Genuine bro
 featured: true
 # Also shown in the Flash Offers section (along with featured)
 offer: true
+promo: "leather-essentials"
 ---
 Sophistication crafted into a timepiece. Designed for a clean, professional look that never goes out of style.
 - **Movement:** High-precision Japanese quartz.
