@@ -4,7 +4,7 @@
 
 Whatalog is a free, open-source template for creating a WhatsApp-based online catalog. It loads product data from Markdown files, lets customers browse and add items to a cart, and sends the complete order as a formatted WhatsApp message.
 
-Built with Next.js 16 + React 19, Tailwind CSS 4, and gray-matter + marked for Markdown-based products. All UI text is in English.
+Built with Next.js 16 + React 19, gray-matter + marked for Markdown-based products. Lightweight, no backend, no database. All UI text is in English.
 
 ---
 
@@ -33,28 +33,33 @@ whatalog/
 │   └── CatalogContainer.jsx                 → Main client component
 ├── components/
 │   ├── Cart.jsx                             → Shopping cart & checkout form
-│   ├── FilterHeader.jsx                     → Header, search, categories, filters, language switcher
-│   ├── MasonryGrid.jsx                      → Pinterest-style masonry grid wrapper
+│   ├── FilterHeader.jsx                     → Header, search, categories, filters, store info modal
+│   ├── LegalInfoModal.jsx                   → Legal / cookies popup
+│   ├── MasonryGrid.jsx                      → CSS multi-column masonry wrapper
+│   ├── OfferModal.jsx                       → Flash Offers expanded popup (all offer products)
 │   ├── Preloader.jsx                        → Loading spinner shown on first render
 │   ├── ProductCard.jsx                      → Product card with image, price, add-to-cart
 │   ├── ProductModal.jsx                     → Product detail modal with gallery, attributes, sharing
-│   └── PromoBanner.jsx                      → Standalone promo banner (16:9)
+│   ├── ProInfoModal.jsx                     → Whatalog Pro features popup
+│   ├── PromoModal.jsx                       → Promo group popup (linked products from promoBanners)
+│   ├── QuickBuyModal.jsx                    → Direct buy / quick checkout form
+│   └── TemplateInfoModal.jsx                → Template info popup (auto-shows on first visit)
 ├── content/
-│   ├── store-config.json                    → Store configuration (name, WhatsApp number, etc.)
+│   ├── store-config.json                    → Store configuration (name, WhatsApp number, promo banners, links)
 │   ├── products/                            → Product .md files + image files
-│   ├── promos/                              → Promotional images (landscape + 2 squares)
-└── lib/
-    ├── products.js                          → Server helpers: getStoreConfig(), getProducts()
-    ├── scroll-lock.js                       → Body scroll lock utility (counter-based)
-├── messages/                                → *(Not present in free version)*
+│   └── promos/                              → Promotional images (landscape + 2 squares)
+├── lib/
+│   ├── popup-history.js                     → Centralized popup back-navigation stack + double-back-to-exit
+│   ├── products.js                          → Server helpers: getStoreConfig(), getProducts()
+│   ├── scroll-lock.js                       → Body scroll lock utility (counter-based)
+│   └── use-history-popup.js                 → React hook wrapping popup-history registerPopup
 ├── public/
 │   └── images/logo.webp                     → Store logo (displayed in header)
 ├── next.config.mjs                          → Next.js configuration
 ├── package.json                             → Dependencies and scripts
-├── postcss.config.mjs                       → PostCSS config (Tailwind CSS)
+├── postcss.config.mjs                       → PostCSS config
 ├── eslint.config.mjs                        → ESLint flat config
 ├── jsconfig.json                            → Path aliases (@/ → .)
-
 ├── README.md                                → Brief project overview
 └── guide.md                                 → This file
 ```
@@ -93,7 +98,8 @@ image: "perfume_rose.png"     # Single image (string path).
 images:                       # Multiple images (array of strings).
   - "perfume_rose.png"        #   First image is used on the product card.
   - "perfume_rose_2.png"      #   All images shown in product modal gallery.
-# OR omit both → no image shown.
+# OR use a full Unsplash URL:
+# image: "https://images.unsplash.com/photo-...?q=80&w=600&auto=format&fit=crop"
 
 # ── OPTIONAL ──────────────────────────────────────────────
 description: "Wild rose and..."   # Short text shown on the product card (clamped to 2 lines).
@@ -103,7 +109,7 @@ offer: true                       # Boolean. Shows product in "Flash Offers" her
 attributes:                       # Key-value pairs displayed in modal & sent in WhatsApp.
   Size: "50 ml"
   Color: "Gold"
-promo: "summer-fragrances"         # String. Groups product into a promo modal (matches promoLinks target).
+promo: "summer-fragrances"        # String. Groups product into a promo modal (matches promoLinks target).
 ---
 ```
 
@@ -117,8 +123,8 @@ priceUSD: 18.00
 originalPrice: 25.00
 category: "Perfumery"
 images:
-  - "perfume_rose.png"
-  - "perfume_rose_2.png"
+  - "https://images.unsplash.com/photo-1541643600914-78b084683601?q=80&w=600&auto=format&fit=crop"
+  - "https://images.unsplash.com/photo-1563170351-be82bc888aa4?q=80&w=600&auto=format&fit=crop"
 description: "Wild rose and premium jasmine fragrance. Long-lasting with a delicate aroma perfect for daily wear."
 featured: true
 offer: true
@@ -142,7 +148,7 @@ id: "bolso-cuero"
 name: "Vintage Leather Handbag"
 priceUSD: 35.00
 category: "Accessories"
-image: "bolso_cuero.png"
+image: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=600&auto=format&fit=crop"
 description: "Elegant camel-color shoulder bag."
 featured: false
 ---
@@ -186,7 +192,7 @@ The `image` / `images` frontmatter values are resolved by `lib/products.js` with
 
 ### Sizing
 
-Product images are displayed in a Pinterest-style masonry grid with three aspect ratios:
+Product images are displayed in a CSS multi-column masonry grid with three aspect ratios:
 
 - **Tall** (`ratio-tall`): padding-top 130% (portrait orientation)
 - **Square** (`ratio-square`): padding-top 100% (1:1)
@@ -236,19 +242,17 @@ Maximum 3 images:
 
 | Index | Position | Aspect Ratio | Desktop layout | Mobile layout |
 |---|---|---|---|---|
-| `[0]` | Left / top | 16:9 (landscape) | Left column (`2fr`) | Full width, 16:9 |
-| `[1]` | Right top | 1:1 (square) | Right column, stacked | 50% width, 1:1 |
-| `[2]` | Right bottom | 1:1 (square) | Right column, stacked | 50% width, 1:1 |
+| `[0]` | Left / top | 16:9 (landscape) | Left column (`1fr auto`) | Full width, 16:9 |
+| `[1]` | Right top | 1:1 (square) | Right column, stacked vertically | 50% width, 1:1 |
+| `[2]` | Right bottom | 1:1 (square) | Right column, stacked vertically | 50% width, 1:1 |
 
 ### Grid Layout
 
-**Desktop (≥769px):** The promo grid is a `2fr 1fr` two-column layout with a fixed height of 512px. The landscape image fills the left column; the two squares stack vertically in the right column.
+**Desktop (≥769px):** The promo grid is a `1fr auto` two-column layout using CSS `container-type: inline-size` for responsive inner sizing. The landscape image fills the left column; the two squares stack vertically in the right column.
 
 **Mobile (≤768px):** The grid becomes a single column. The landscape image is full-width with 16:9 aspect ratio. The two squares are side-by-side in a `1fr 1fr` grid, each with 1:1 aspect ratio.
 
 If `promoBanners` is empty or undefined, the promo section is not rendered.
-
-You can also use the standalone `<PromoBanner />` component (in `components/PromoBanner.jsx`) which renders a single 16:9 full-width banner.
 
 ### Promo Click Behavior (promoLinks)
 
@@ -283,6 +287,8 @@ promo: "summer-fragrances"
 
 Products with no `promo` field (or `null`) are not shown in any promo modal.
 
+Each promo group should contain 2–4 products for optimal display.
+
 **Legacy behavior** (still supported):  
 - `{ "type": "product", "target": "product-id" }` — clicking the banner opens the product detail modal.
 - `{ "type": "section", "target": "offers" }` — clicking the banner scrolls to the Flash Offers section.
@@ -307,6 +313,11 @@ File: `content/store-config.json`
     "/api/images/promos/landscape-promo.webp",
     "/api/images/promos/square-promo-1.webp",
     "/api/images/promos/square-promo-2.webp"
+  ],
+  "promoLinks": [
+    { "type": "promo", "target": "summer-fragrances", "title": "Summer Fragrances", "subtitle": "Light & fresh scents" },
+    { "type": "promo", "target": "accessories-edit", "title": "Accessories Edit", "subtitle": "Complete your look" },
+    { "type": "promo", "target": "leather-essentials", "title": "Leather Essentials", "subtitle": "Timeless pieces" }
   ]
 }
 ```
@@ -320,6 +331,7 @@ File: `content/store-config.json`
 | `currency.code` | string | Yes | ISO 4217 currency code (e.g., `"USD"`, `"EUR"`). Displayed next to prices. |
 | `currency.symbol` | string | Yes | Currency symbol (e.g., `"$"`, `"€"`). Displayed before prices. |
 | `promoBanners` | array | No | Array of up to 3 image paths for the hero promotional grid. See Promotional Images section above. |
+| `promoLinks` | array | No | Array of up to 3 promo link configs, one per promo banner. Controls what happens when each banner is tapped. |
 
 ### Fallback Values
 
@@ -344,9 +356,9 @@ The page is organized top-to-bottom as follows:
 ┌──────────────────────────────────────────────┐
 │  HEADER (fixed, glassmorphism)               │
 │  [Logo] [Category: All | Cat1 | Cat2 | ... ] │
-│  [Search (desktop)] [🔍(mobile)] [ℹ️]         │
+│  [Search bar] [Info icon] [Cart button]      │
 ├──────────────────────────────────────────────┤
-│  PROMO GRID (if banners configured)           │
+│  PROMO GRID (if banners configured)          │
 │  ┌──────────┐ ┌───────────┐                   │
 │  │ Landscape│ │ Square #1 │                   │
 │  │  (16:9)  │ ├───────────┤                   │
@@ -354,17 +366,17 @@ The page is organized top-to-bottom as follows:
 │  └──────────┘ └───────────┘                   │
 ├──────────────────────────────────────────────┤
 │  FLASH OFFERS (if any product has offer:true) │
-│  ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐          │
-│  │ Card │ │ Card │ │ Card │ │ Card │          │
-│  └──────┘ └──────┘ └──────┘ └──────┘          │
-│  (2-column mobile, 4-column desktop)          │
+│  ┌──────┬──────┬──────┬──────┐                │
+│  │ Card │ Card │ Card │ Card │  [+ button]    │
+│  └──────┴──────┴──────┴──────┘                │
+│  (2-col mobile, 4-col desktop, max 4 shown)   │
 ├──────────────────────────────────────────────┤
-│  AVAILABLE PRODUCTS                           │
+│  AVAILABLE PRODUCTS                      [f] │
 │  ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐          │
 │  │Card  │ │Card  │ │Card  │ │Card  │          │
 │  │(tall)│ │(sqr) │ │(wide)│ │(tall)│          │
 │  └──────┘ └──────┘ └──────┘ └──────┘          │
-│  Masonry grid (Pinterest-style)               │
+│  CSS multi-column masonry                     │
 │  2-col mobile, 4-col desktop                  │
 │                                               │
 │  ... [Infinite scroll loader] ...             │
@@ -373,8 +385,11 @@ The page is organized top-to-bottom as follows:
 │  ┌──────────────────────────────────────┐     │
 │  │  Google Maps iframe                  │     │
 │  └──────────────────────────────────────┘     │
-│  © 2026 Whatalog. All rights reserved.        │
-│  [Instagram] [Facebook] [Telegram] [WhatsApp] │
+│  [Social icons: GitHub, Instagram,             │
+│   Facebook, WhatsApp]                         │
+│  [Store Info] [Template Info]                  │
+│  © 2026 Whatalog. All rights reserved.         │
+│  Made with ❤️‍🔥 by 1azarito                     │
 └──────────────────────────────────────────────┘
 
   ┌─────────────────────┐
@@ -388,11 +403,41 @@ The page is organized top-to-bottom as follows:
   │ [Name]              │
   │ [Price / Discount]  │
   │ [Attributes table]  │
-  │ [Share buttons]     │
-  │ [Description HTML]  │
-  │ [Add to Cart  🛒]   │
+  │ [Share button]      │
+  │ [Buy] [Add to Cart] │
+  └─────────────────────┘
+
+  ┌─────────────────────┐
+  │ QuickBuy Modal      │ ← Slides up on "Buy" tap
+  │ (direct checkout)   │     (nested, keeps ProductModal open)
+  └─────────────────────┘
+
+  ┌─────────────────────┐
+  │ Promo / Offer Modal │ ← Opens on promo banner or [+]
+  │ [Products grid]     │
+  │ [Add to cart]       │
+  │                     │ ← Product tap opens ProductModal
+  │                     │     (keeps PromoModal open)
   └─────────────────────┘
 ```
+
+### Popup Stacking Behavior
+
+Popups use a centralized back-navigation stack (`lib/popup-history.js`):
+
+- Each popup is pushed onto a stack when it opens.
+- Pressing the browser back button (or swipe gesture) closes only the **topmost** popup.
+- A second back press closes the next popup, and so on.
+- When no popups are open, pressing back shows a **"Press back again to exit"** warning toast (orange). A second back press within 3 seconds exits the site.
+- Close buttons (X) and overlay taps close only that popup and never cascade.
+
+Nested popup scenarios:
+
+| Scenario | Behavior |
+|---|---|
+| PromoModal → ProductModal | Both remain open. Back closes ProductModal first. |
+| ProductModal → QuickBuyModal | Both remain open. Back closes QuickBuyModal first. |
+| Back with no popups | Shows exit warning toast (double-back-to-exit). |
 
 ---
 
@@ -444,11 +489,12 @@ All colors are defined as CSS custom properties in `app/globals.css`. The design
 ### Color Usage Notes
 
 - The "OFFER" badge on product cards uses `--accent-green2` (`#25d366`) as background.
-- The "OFFER" badge inside the product modal uses a hardcoded `#e74c3c` (red) background instead of a CSS variable.
-- Share buttons (`share-btn`) use hardcoded dark colors (`#1a1a1a` background, `#333` border) — they do NOT use CSS variables.
-- The floating cart button uses a hardcoded `#008a72` with `#007a63` hover instead of `--accent-green`. This is intentional for the darker, more prominent bottom button.
-- The active category pill uses `--text-primary` as background and `--accent-light` as text color (inverted from normal).
-- The featured title and category titles have a line after them created with `::after` pseudo-element using `--border-color`.
+- The "OFFER" badge inside the product modal uses a hardcoded `#e74c3c` (red) background.
+- Share buttons use hardcoded dark colors (`#1a1a1a` background, `#333` border).
+- The floating cart button uses a hardcoded `#008a72` with `#007a63` hover.
+- The active category pill uses `--text-primary` as background and `--accent-light` as text color.
+- Toast notifications: green (`var(--accent-green)`) for cart actions, orange (`#e67e22`) for exit warning.
+- Section titles have a decorative line created with an explicit `<span className="featured-title-line">` element, NOT a `::after` pseudo-element.
 
 ### Transitions
 
@@ -576,11 +622,8 @@ Below is every user-facing string in Whatalog, where it lives, and its default E
 | `"Previous image"` | Image nav button `aria-label` |
 | `"Next image"` | Image nav button `aria-label` |
 | `"OFFER"` | Discount badge |
-| `"Share on WhatsApp"` | Share button `title` |
-| `"Share on Facebook"` | Share button `title` |
-| `"Share on Twitter"` | Share button `title` |
-| `"Copy link"` | Share button `title` |
-| `"Link copied to clipboard"` | Alert text |
+| `"Share"` | Share button `title` |
+| `"Buy"` | Direct buy button |
 | `"Add to Cart"` | CTA button |
 
 ### Catalog (`app/CatalogContainer.jsx`)
@@ -592,10 +635,24 @@ Below is every user-facing string in Whatalog, where it lives, and its default E
 | `"No products found"` | Empty results title |
 | `"Try different search terms or change category."` | Empty results hint |
 | `"Clear Filters"` | Reset button |
-| `"Added: {name}"` | Toast notification |
-| `"Quantity updated"` | Toast notification |
-| `"Removed: {name}"` | Toast notification |
+| `"Added: {name}"` | Toast notification (cart add) |
+| `"Quantity updated"` | Toast notification (cart update) |
+| `"Removed: {name}"` | Toast notification (cart remove) |
+| `"Press back again to exit"` | Toast notification (exit warning) |
 | `"All rights reserved."` | Footer text |
+| `"Store Info"` | Footer info button |
+| `"Template Info"` | Footer info button |
+
+### Template Info Modal (`components/TemplateInfoModal.jsx`)
+
+| String | Context |
+|---|---|
+| `"Whatalog — Open Source WhatsApp Catalog"` | Modal title |
+| `"Free Template"` | Badge |
+| `"This is a free, open-source template..."` | Body text |
+| `"Download template ZIP"` | Download button |
+| `"View on GitHub"` | GitHub link |
+| `"Got it!"` | Dismiss button |
 
 ---
 
@@ -607,7 +664,7 @@ The cart is managed entirely on the client side in `CatalogContainer.jsx`:
 
 1. **State:** `cartItems` is an array of product objects, each with a `quantity` property.
 2. **Persistence:** Cart is saved to `localStorage` under the key `whatalog_cart` on every change. It survives page reloads.
-3. **Adding:** Clicking "+" on a product card or "Add to Cart" in the modal adds/updates the item. A toast notification appears for 2.7 seconds.
+3. **Adding:** Clicking "+" on a product card or "Add to Cart" in the modal adds/updates the item. A green toast notification appears for 2.7 seconds.
 4. **Updating:** In the cart drawer, +/- buttons change quantity. If quantity reaches 0, the item is removed.
 5. **Removing:** The trash icon removes the item entirely. A toast confirms the removal.
 
@@ -805,8 +862,16 @@ offer: true
 
 When `offer: true`:
 - The product appears in the "Flash Offers" featured section at the top of the catalog (right below the promo grid).
+- Only the first 4 offer products are shown in the grid; all offers can be viewed by tapping the **+ button** (circular, green, at the end of the title row).
+- The "+ button" opens an `OfferModal` popup showing ALL offer products in a promo-style grid.
 - The offer section uses a 2-column (mobile) / 4-column (desktop) grid layout, NOT the masonry layout.
 - Products in this section always use `ratio-square` aspect ratio.
+
+The title row layout:
+```
+Flash Offers ────────────────────── [+]
+```
+The separator line is an explicit `<span className="featured-title-line">`, and the + button is pushed to the far right with `margin-left: auto`.
 
 The filtering logic in `CatalogContainer.jsx`:
 ```js
@@ -815,6 +880,16 @@ const offerProducts = useMemo(() => {
     .map((p) => ({ ...p, ratioClass: "ratio-square" }));
 }, [initialProducts]);
 ```
+
+### 3. `flashOfferDetails` Field
+
+Optional. When set, overrides the subtitle/description shown in the OfferModal popup:
+
+```yaml
+flashOfferDetails: "Limited time deal — 30% off selected items!"
+```
+
+If not provided, a default message is used: _"Grab these exclusive deals before they are gone!"_
 
 ### Combining Both
 
@@ -835,7 +910,7 @@ This shows the product with a strikethrough original price AND places it in the 
 
 Categories are automatically created from the `category` field in each product's frontmatter. There is no predefined category list — any string value becomes a category.
 
-In `lib/products.js`, categories are extracted when products are loaded:
+In `CatalogContainer.jsx`, categories are extracted when products are loaded:
 ```js
 const categories = Array.from(new Set(initialProducts.map((p) => p.category)));
 ```
@@ -845,6 +920,7 @@ const categories = Array.from(new Set(initialProducts.map((p) => p.category)));
 1. **Filter pills:** Each unique category becomes a button in the header's horizontal scrollable nav. The first button is always "All" (shows all products).
 2. **Filtering:** Clicking a category pill filters the product grid to only show products with that category. The filter is applied client-side in `CatalogContainer.jsx`.
 3. **Auto-scroll:** When a category is selected, the catalog section scrolls into view smoothly.
+4. **Available Products title:** Includes a filter icon button (`.btn-filter-catalog`) at the far right of the title row that opens the sort/filter popup.
 
 ### Renaming a Category
 
@@ -867,6 +943,214 @@ A category is automatically removed when no products use it. To delete a categor
 
 ---
 
+## Popup & Modal System
+
+### All Modals
+
+Every modal/popup in Whatalog follows a consistent pattern:
+
+- **Max height:** `max-height: 90svh` (uses `svh` units, not `vh` or `dvh`).
+- **Scrollbar hiding:** Inner scroll containers hide scrollbars:
+  ```css
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar { display: none; }
+  ```
+- **Close button:** Positioned `absolute` at top-right, outside the scrollable content area.
+- **Scroll wrapper:** Content is wrapped in a scrollable `<div>` (`.store-info-scroll`, `.quickbuy-scroll`, `.product-modal-scroll-content`) so the close button stays fixed.
+- **Backdrop:** A semi-transparent overlay that closes the modal on tap.
+- **Body scroll lock:** Uses `lockBodyScroll()` from `@/lib/scroll-lock` (counter-based, handles multiple simultaneous modals).
+- **Back navigation:** Uses the centralized popup history stack (see below).
+
+### Popup History & Back Navigation
+
+File: `lib/popup-history.js`
+
+A centralized module manages ALL popup back-navigation:
+
+- `initPopupHistory(showExitToastFn)` — Called once from `CatalogContainer.jsx`. Sets up a single global `popstate` listener.
+- `registerPopup(onClose)` — Called by each popup via the `useHistoryPopup` hook. Pushes the popup onto a stack and creates a history entry.
+
+The `popstate` handler:
+1. If the stack has popups, it pops the **topmost** one and calls its `onClose`.
+2. If the stack is empty but there are stale history entries (from popups closed via button), it silently consumes them.
+3. If genuinely no popups and no stale entries remain, it handles **double-back-to-exit**:
+   - First back press: shows orange exit warning toast, pushes a new history entry to intercept the next back.
+   - Second back press within 3 seconds: allows the browser to navigate away.
+   - If 3 seconds pass without a second back press, the counter resets.
+
+Nested popup preservation:
+- When a popup opens another from within (e.g., PromoModal → ProductModal → QuickBuyModal), the parent popup's `onClose` is NOT called.
+- This is implemented by removing `onClose()` calls from the opening handlers (e.g., in PromoModal's product click and ProductModal's `handleDirectBuy`).
+
+### Modal Components Reference
+
+| Component | File | Triggered by | Notes |
+|---|---|---|---|
+| ProductModal | `components/ProductModal.jsx` | Product card tap, promo product tap | Slides up, z-index 210 |
+| QuickBuyModal | `components/QuickBuyModal.jsx` | "Buy" button in ProductModal | Stays on top of ProductModal |
+| PromoModal | `components/PromoModal.jsx` | Promo banner tap | Shows related products (promo field match) |
+| OfferModal | `components/OfferModal.jsx` | + button in Flash Offers title | Shows ALL offer products |
+| Store Info | Inside `FilterHeader.jsx` | Info icon, footer "Store Info" button | Opens via custom event `open-store-info` |
+| Sort / Filter | Inside `FilterHeader.jsx` | Filter icon, title filter button | Opens via custom event `open-sort-menu` |
+| TemplateInfoModal | `components/TemplateInfoModal.jsx` | Auto on first visit, footer button | Uses `open-template-modal` custom event |
+| LegalInfoModal | `components/LegalInfoModal.jsx` | Via Store Info modal | Nested popup inside Store Info |
+| ProInfoModal | `components/ProInfoModal.jsx` | Via Store Info modal | Nested popup inside Store Info |
+
+### Custom Events
+
+Cross-component popup triggers use custom DOM events:
+
+| Event | Dispatched by | Listened by |
+|---|---|---|
+| `open-store-info` | Footer "Store Info" button | `FilterHeader.jsx` |
+| `open-sort-menu` | Catalog filter button, sort button | `FilterHeader.jsx` |
+| `open-template-modal` | Footer "Template Info" button | `TemplateInfoModal.jsx` |
+
+These avoid lifting state up through multiple component layers.
+
+---
+
+## Masonry Grid
+
+File: `components/MasonryGrid.jsx`
+
+The product grid uses **CSS multi-column layout** (`column-count`), NOT CSS Grid or Flexbox. This creates a true Pinterest-style waterfall masonry where each product has its natural aspect ratio and items flow into the shortest column automatically.
+
+```css
+.pinterest-masonry {
+  column-count: 2;
+  column-gap: 0.75rem;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .pinterest-masonry {
+    column-count: 4;
+    column-gap: 1rem;
+  }
+}
+```
+
+Product cards use `break-inside: avoid` and `display: inline-block` to prevent items from being split across columns. Each card has `width: 100%` and `margin-bottom` for spacing.
+
+**Multi-column vs CSS Grid tradeoff:** Multi-column fills items top-to-bottom in the first column before moving to the next. This means filtered results with very few products may appear stacked in a single column. CSS Grid was tested but produced gaps below shorter items (due to equal row heights), so the multi-column approach was kept for its superior visual masonry effect with no gaps.
+
+---
+
+## Footer
+
+File: `app/CatalogContainer.jsx` (scoped `<style jsx global>`)
+
+The footer is structured top-to-bottom:
+
+1. **Google Maps iframe** — Embedded map location.
+2. **Social icons row** — GitHub, Instagram, Facebook, WhatsApp (each as an SVG icon link).
+3. **Info buttons row** — Two buttons side by side:
+   - "Store Info" — dispatches `open-store-info` custom event.
+   - "Template Info" — dispatches `open-template-modal` custom event.
+4. **Copyright** — `© {year} Whatalog. All rights reserved.`
+5. **"Made with ❤️‍🔥 by 1azarito"** — Links to `https://1azarito.vercel.app`.
+
+The same "Made with ❤️‍🔥 by 1azarito" text also appears in:
+- The Store Info modal (`FilterHeader.jsx`).
+- The Template Info modal (`TemplateInfoModal.jsx`).
+
+---
+
+## Toast Notifications
+
+File: `app/CatalogContainer.jsx` + `app/globals.css`
+
+A toast notification system provides brief, non-blocking feedback:
+
+- **Position:** Fixed at top-right (`top: 4.5rem; right: 1rem`).
+- **Duration:** 2.7 seconds, auto-dismiss.
+- **Animation:** Slides in from the right (`toast-slide-in` keyframe).
+- **Types:**
+  - **Success** (green, `var(--accent-green)`): Cart actions ("Added: ...", "Quantity updated", "Removed: ...").
+  - **Warning** (orange, `#e67e22`): Exit warning ("Press back again to exit").
+- **Max width:** `calc(100% - 2rem)` on mobile, `360px` on desktop.
+- **Z-index:** 210 (above most content, below modals).
+
+The `showToast` function in `CatalogContainer.jsx`:
+```js
+const showToast = (message, type = "success") => {
+  setToast(message);
+  setToastType(type);
+  // auto-dismiss after 2700ms
+};
+```
+
+---
+
+## Scroll Lock Utility
+
+File: `lib/scroll-lock.js`
+
+A counter-based scroll lock utility that prevents background scrolling when modals or the cart are open.
+
+```js
+import { lockBodyScroll } from "@/lib/scroll-lock";
+
+useEffect(() => {
+  if (isOpen) {
+    return lockBodyScroll();
+  }
+}, [isOpen]);
+```
+
+Key features:
+- Handles multiple simultaneous locks (each call increments a counter).
+- Prevents wheel and touch events outside modal content (checked via `.closest()` selectors).
+- Restores scroll when the last lock is released.
+- Used by `Cart.jsx`, `ProductModal.jsx`, `QuickBuyModal.jsx`, `PromoModal.jsx`, `OfferModal.jsx`, `FilterHeader.jsx`, `TemplateInfoModal.jsx`, and all info modals.
+
+---
+
+## Template Info Popup
+
+The project includes a modal popup (`components/TemplateInfoModal.jsx`) that appears automatically on first visit. It explains that this is a template and provides a download ZIP + link to the GitHub repo.
+
+### How it works
+
+- A `localStorage` flag (`whatalog_template_seen`) controls whether the popup has been dismissed.
+- On first visit (no flag found), the popup appears after a 600ms delay.
+- Once dismissed, the flag is set and the popup won't auto-show again.
+- Users can re-open it anytime via the **"Template Info"** button in the footer (dispatches `open-template-modal`).
+
+### Disable the auto-popup entirely
+
+In `components/TemplateInfoModal.jsx`, remove or comment out the first `useEffect`:
+
+```js
+// Remove or comment this block to disable auto-show on first visit
+// useEffect(() => {
+//   const seen = localStorage.getItem("whatalog_template_seen");
+//   if (!seen) {
+//     const timer = setTimeout(show, 600);
+//     return () => clearTimeout(timer);
+//   }
+// }, [show]);
+```
+
+### Re-purpose as a promo / announcement popup
+
+Since the popup uses the same modal pattern as the store info modal, you can easily adapt it:
+
+1. Edit the content inside `components/TemplateInfoModal.jsx` — replace the text, links, and buttons with your own promo message.
+2. Change the `localStorage` key from `"whatalog_template_seen"` to something like `"promo_spring2026_seen"` to reset visibility.
+3. Adjust the auto-show delay (currently 600ms) or remove it to show instantly on page load.
+
+### Remove the popup entirely
+
+1. Delete `components/TemplateInfoModal.jsx`.
+2. Remove the import and `<TemplateInfoModal />` from `app/CatalogContainer.jsx`.
+3. Remove the footer button that dispatches `open-template-modal` (inside `app/CatalogContainer.jsx`).
+4. Remove the associated CSS from `app/globals.css` (`.template-info-modal`, `.template-info-actions`, `.template-btn-download`, `.template-btn-got-it`, `.footer-template-link`).
+
+---
+
 ## Manual Translation (How to Customize UI Text)
 
 All user-facing text is hardcoded in English directly in the component files. There is no separate translation system in the free version — this keeps the template simple and dependency-free.
@@ -878,7 +1162,9 @@ All user-facing text is hardcoded in English directly in the component files. Th
    - `components/Cart.jsx` — cart drawer and checkout form
    - `components/ProductModal.jsx` — product detail modal
    - `components/ProductCard.jsx` — product card badges
+   - `components/TemplateInfoModal.jsx` — template info popup
    - `app/CatalogContainer.jsx` — section titles, toast messages, footer
+   - `components/OfferModal.jsx` — Flash Offers popup
 
 2. **Edit the string directly** — for example, change `"My Cart"` to `"Mi Carrito"` in `components/Cart.jsx`.
 
@@ -941,73 +1227,7 @@ See the "Colors and Design System" section above for the full dark mode color va
 - Product images (they are loaded as-is)
 - Share buttons (hardcoded dark colors `#1a1a1a`)
 - The OFFER badge in product modal (hardcoded `#e74c3c`)
-
----
-
-## Scroll Lock Utility
-
-File: `lib/scroll-lock.js`
-
-A counter-based scroll lock utility that prevents background scrolling when modals or the cart are open.
-
-```js
-import { lockBodyScroll } from "@/lib/scroll-lock";
-
-useEffect(() => {
-  if (isOpen) {
-    return lockBodyScroll();
-  }
-}, [isOpen]);
-```
-
-Key features:
-- Handles multiple simultaneous locks (each call increments a counter).
-- Maintains the scroll position using `position: fixed` + `top: -{scrollY}px`.
-- Restores scroll position when the last lock is released.
-- Used by `Cart.jsx`, `ProductModal.jsx`, and `FilterHeader.jsx` (for Store Info and Sort modals).
-
----
-
-## Template Info Popup
-
-The project includes a modal popup (`components/TemplateInfoModal.jsx`) that appears automatically on first visit. It explains that this is a template and provides a download ZIP + link to the GitHub repo.
-
-### How it works
-
-- A `localStorage` flag (`whatalog_template_seen`) controls whether the popup has been dismissed.
-- On first visit (no flag found), the popup appears after a 600ms delay.
-- Once dismissed, the flag is set and the popup won't auto-show again.
-- Users can re-open it anytime via the **"What is this? — Template info"** link in the footer.
-
-### Disable the auto-popup entirely
-
-In `components/TemplateInfoModal.jsx`, remove or comment out the first `useEffect`:
-
-```js
-// Remove or comment this block to disable auto-show on first visit
-// useEffect(() => {
-//   const seen = localStorage.getItem("whatalog_template_seen");
-//   if (!seen) {
-//     const timer = setTimeout(show, 600);
-//     return () => clearTimeout(timer);
-//   }
-// }, [show]);
-```
-
-### Re-purpose as a promo / announcement popup
-
-Since the popup uses the same modal pattern as the store info modal, you can easily adapt it:
-
-1. Edit the content inside `components/TemplateInfoModal.jsx` — replace the text, links, and buttons with your own promo message.
-2. Change the `localStorage` key from `"whatalog_template_seen"` to something like `"promo_spring2026_seen"` to reset visibility.
-3. Adjust the auto-show delay (currently 600ms) or remove it to show instantly on page load.
-
-### Remove the popup entirely
-
-1. Delete `components/TemplateInfoModal.jsx`.
-2. Remove the import and `<TemplateInfoModal />` from `app/CatalogContainer.jsx`.
-3. Remove the footer button that dispatches `open-template-modal` (inside `app/CatalogContainer.jsx`).
-4. Remove the associated CSS from `app/globals.css` (`.template-info-modal`, `.template-info-actions`, `.template-btn-download`, `.template-btn-got-it`, `.footer-template-link`).
+- Toast warning (`#e67e22` orange is hardcoded)
 
 ---
 
