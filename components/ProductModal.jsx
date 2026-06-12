@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useState } from "react";
+import SafeImage from "@/components/SafeImage";
 import { lockBodyScroll } from "@/lib/scroll-lock";
 import { useHistoryPopup } from "@/lib/use-history-popup";
 
@@ -49,7 +49,7 @@ export default function ProductModal({ product, onClose, onAddToCart, storeConfi
             <div className="product-modal-content">
               <div className="product-modal-image-col">
                 <div className="product-modal-image-wrapper">
-                  <Image
+                  <SafeImage
                     src={productImages[activeImage]}
                     alt={name}
                     fill
@@ -224,7 +224,7 @@ export default function ProductModal({ product, onClose, onAddToCart, storeConfi
           display: grid;
           grid-template-columns: 1fr;
           gap: 2rem;
-          padding: 2.5rem 2.5rem 1.5rem 2.5rem;
+          padding: 2rem 1.5rem 1.5rem 1.5rem;
         }
 
         .product-modal-image-col {
@@ -363,7 +363,7 @@ export default function ProductModal({ product, onClose, onAddToCart, storeConfi
         .product-modal-details-html li { list-style-type: disc; }
 
         .product-modal-footer {
-          padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
+          padding: 1rem 1.5rem calc(1rem + env(safe-area-inset-bottom, 0px));
           border-top: 1px solid var(--border-color);
           background: var(--bg-primary);
           flex-shrink: 0;

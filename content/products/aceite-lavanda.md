@@ -3,7 +3,7 @@ id: "aceite-lavanda"
 name: "Lavender Relaxing Oil"
 priceUSD: 15.50
 category: "Cosmetics"
-image: "https://images.unsplash.com/photo-1599733589046-10c7f0f8a2e2?q=80&w=600&auto=format&fit=crop"
+image: "https://images.unsplash.com/photo-1541643600914-78b084683601?q=80&w=600&auto=format&fit=crop"
 description: "Pure lavender essential oil sourced from Provence. Perfect for aromatherapy, massage, and creating a calming atmosphere."
 promo: "summer-fragrances"
 ---

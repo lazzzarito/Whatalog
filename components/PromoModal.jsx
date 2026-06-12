@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import Image from "next/image";
+import SafeImage from "@/components/SafeImage";
 import { lockBodyScroll } from "@/lib/scroll-lock";
 import { useHistoryPopup } from "@/lib/use-history-popup";
 
@@ -35,7 +35,7 @@ export default function PromoModal({ promo, products, onClose, onAddToCart, onOp
         <div className="store-info-scroll">
           {promo.image && (
             <div className="promo-modal-banner">
-              <Image src={promo.image} alt={promo.title || "Promotion"} width={0} height={0} sizes="100vw" className="promo-modal-banner-img" />
+              <SafeImage src={promo.image} alt={promo.title || "Promotion"} width={0} height={0} sizes="100vw" className="promo-modal-banner-img" />
             </div>
           )}
 
@@ -62,7 +62,7 @@ export default function PromoModal({ promo, products, onClose, onAddToCart, onOp
                     onClick={() => onOpenDetails(product)}
                   >
                     <div className="promo-modal-image-wrapper">
-                      <Image src={product.image} alt={product.name} width={80} height={80} className="promo-modal-image" />
+                      <SafeImage src={product.image} alt={product.name} width={80} height={80} className="promo-modal-image" />
                     </div>
                     <div className="promo-modal-info">
                       <span className="promo-modal-category">{product.category}</span>

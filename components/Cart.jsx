@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import Image from "next/image";
+import SafeImage from "@/components/SafeImage";
 import { lockBodyScroll } from "@/lib/scroll-lock";
 import { useHistoryPopup } from "@/lib/use-history-popup";
 
@@ -22,10 +22,16 @@ export default function Cart({ cartItems, onUpdateQty, onRemoveItem, onClearCart
   const [step, setStep] = useState(1);
   const [customer, setCustomer] = useState(defaultCustomer);
   const [confirmed, setConfirmed] = useState(false);
-  const confirmedItems = useRef(null);
+  const [confirmedItems, setConfirmedItems] = useState(null);
+  const prevOpen = useRef(isOpen);
 
   useEffect(() => {
-    if (isOpen) { setStep(1); setConfirmed(false); confirmedItems.current = null; }
+    if (isOpen && !prevOpen.current) {
+      setStep(1);
+      setConfirmed(false);
+      setConfirmedItems(null);
+    }
+    prevOpen.current = isOpen;
   }, [isOpen]);
 
   useEffect(() => {
@@ -87,7 +93,7 @@ export default function Cart({ cartItems, onUpdateQty, onRemoveItem, onClearCart
   const handleConfirm = (e) => {
     if (!canConfirm) { e.preventDefault(); return; }
     localStorage.setItem(CUSTOMER_KEY, JSON.stringify(customer));
-    confirmedItems.current = cartItems.map((item) => ({ ...item }));
+    setConfirmedItems(cartItems.map((item) => ({ ...item })));
     setConfirmed(true);
     setTimeout(() => onClearCart(), 300);
   };
@@ -96,8 +102,8 @@ export default function Cart({ cartItems, onUpdateQty, onRemoveItem, onClearCart
     setIsOpen(false);
   };
 
-  const showingConfirm = confirmed && confirmedItems.current;
-  const itemsToShow = showingConfirm ? confirmedItems.current : [];
+  const showingConfirm = confirmed && confirmedItems;
+  const itemsToShow = showingConfirm ? confirmedItems : [];
 
   return (
     <>
@@ -158,7 +164,7 @@ export default function Cart({ cartItems, onUpdateQty, onRemoveItem, onClearCart
                     {itemsToShow.map((item) => (
                       <div className="cart-confirmed-product" key={item.id}>
                         <div className="cart-confirmed-product-image-wrapper">
-                          <Image src={item.image} alt={item.name} width={60} height={60} className="cart-confirmed-product-image" />
+                          <SafeImage src={item.image} alt={item.name} width={60} height={60} className="cart-confirmed-product-image" />
                         </div>
                         <div className="cart-confirmed-product-info">
                           {item.category && <span className="cart-confirmed-product-category">{item.category}</span>}
@@ -208,7 +214,7 @@ export default function Cart({ cartItems, onUpdateQty, onRemoveItem, onClearCart
               {cartItems.map((item) => (
                 <div className="cart-item" key={item.id}>
                   <div className="cart-item-image-wrapper">
-                    <Image src={item.image} alt={item.name} width={80} height={80} className="cart-item-image" />
+                    <SafeImage src={item.image} alt={item.name} width={80} height={80} className="cart-item-image" />
                   </div>
                   <div className="cart-item-details">
                     {item.category && <span className="cart-item-category">{item.category}</span>}

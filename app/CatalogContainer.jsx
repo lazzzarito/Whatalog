@@ -62,6 +62,16 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
     localStorage.removeItem("whatalog_cart");
   }, []);
 
+  // ── Toast notifications ──
+  const showToast = (message, type = "success") => {
+    setToast(message);
+    setToastType(type);
+    window.clearTimeout(toastTimeoutRef.current);
+    toastTimeoutRef.current = window.setTimeout(() => {
+      setToast(null);
+    }, 2700);
+  };
+
   useEffect(() => {
     return () => {
       if (persistTimerRef.current) clearTimeout(persistTimerRef.current);
@@ -72,16 +82,6 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
     const cleanup = initPopupHistory(() => showToast("Press back again to exit", "warning"));
     return cleanup;
   }, []);
-
-  // ── Toast notifications ──
-  const showToast = (message, type = "success") => {
-    setToast(message);
-    setToastType(type);
-    window.clearTimeout(toastTimeoutRef.current);
-    toastTimeoutRef.current = window.setTimeout(() => {
-      setToast(null);
-    }, 2700);
-  };
 
   useEffect(() => {
     return () => {
@@ -306,17 +306,17 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
         {promoBanners[0] && (
           <div className="promo-grid">
             <div className="promo-grid-landscape" onClick={() => handlePromoClick(0)} style={{ cursor: "pointer" }}>
-              <Image src={promoBanners[0]} alt="Promotion" fill className="promo-grid-img" sizes="(max-width: 768px) 100vw, 50vw" priority />
+              <Image src={promoBanners[0]} alt={storeConfig.promoLinks?.[0]?.title || "Promotion"} fill className="promo-grid-img" sizes="(max-width: 768px) 100vw, 50vw" priority />
             </div>
             <div className="promo-grid-squares">
               {promoBanners[1] && (
                 <div className="promo-grid-square" onClick={() => handlePromoClick(1)} style={{ cursor: "pointer" }}>
-                  <Image src={promoBanners[1]} alt="Promotion" fill className="promo-grid-img" sizes="(max-width: 768px) 50vw, 25vw" priority />
+                  <Image src={promoBanners[1]} alt={storeConfig.promoLinks?.[1]?.title || "Promotion"} fill className="promo-grid-img" sizes="(max-width: 768px) 50vw, 25vw" priority />
                 </div>
               )}
               {promoBanners[2] && (
                 <div className="promo-grid-square" onClick={() => handlePromoClick(2)} style={{ cursor: "pointer" }}>
-                  <Image src={promoBanners[2]} alt="Promotion" fill className="promo-grid-img" sizes="(max-width: 768px) 50vw, 25vw" priority />
+                  <Image src={promoBanners[2]} alt={storeConfig.promoLinks?.[2]?.title || "Promotion"} fill className="promo-grid-img" sizes="(max-width: 768px) 50vw, 25vw" priority />
                 </div>
               )}
             </div>
@@ -443,6 +443,7 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
         <QuickBuyModal
           product={quickBuyProduct}
           onClose={() => setQuickBuyProduct(null)}
+          onOrderComplete={() => setSelectedProduct(null)}
           storeConfig={storeConfig}
         />
       )}
@@ -631,7 +632,7 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
           <div className="footer-map-frame">
             <iframe
               title="Store location"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3593.2315394774677!2d-80.19178818465261!3d25.76167978363209!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x88d9b4a1b1b1b1b1%3A0x1b1b1b1b1b1b1b1b!2sMiami%2C%20FL%2C%20USA!5e0!3m2!1sen!2sus!4v1710000000000"
+              src={storeConfig.mapEmbedUrl || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3593.2315394774677!2d-80.19178818465261!3d25.76167978363209!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x88d9b4a1b1b1b1b1%3A0x1b1b1b1b1b1b1b1b!2sMiami%2C%20FL%2C%20USA!5e0!3m2!1sen!2sus!4v1710000000000"}
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
               aria-hidden="false"
@@ -647,14 +648,14 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
                 <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
               </svg>
             </a>
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="social-icon-btn" title="Instagram">
+            <a href={storeConfig.socialLinks?.instagram || "https://instagram.com"} target="_blank" rel="noopener noreferrer" className="social-icon-btn" title="Instagram">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
                 <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
                 <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
               </svg>
             </a>
-            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="social-icon-btn" title="Facebook">
+            <a href={storeConfig.socialLinks?.facebook || "https://facebook.com"} target="_blank" rel="noopener noreferrer" className="social-icon-btn" title="Facebook">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
               </svg>

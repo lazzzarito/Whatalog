@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import Image from "next/image";
+import { useState, useEffect } from "react";
+import SafeImage from "@/components/SafeImage";
 import { lockBodyScroll } from "@/lib/scroll-lock";
 import { useHistoryPopup } from "@/lib/use-history-popup";
 
@@ -17,10 +17,10 @@ const defaultCustomer = () => {
   return { name: "", phone: "", delivery: "pickup", address: "", payment: "", paymentOther: "" };
 };
 
-export default function QuickBuyModal({ product, onClose, storeConfig }) {
+export default function QuickBuyModal({ product, onClose, onOrderComplete, storeConfig }) {
   const [customer, setCustomer] = useState(defaultCustomer);
   const [confirmed, setConfirmed] = useState(false);
-  const confirmedItem = useRef(null);
+  const [confirmedItem, setConfirmedItem] = useState(null);
 
   useEffect(() => {
     if (product) {
@@ -55,7 +55,7 @@ export default function QuickBuyModal({ product, onClose, storeConfig }) {
   const handleConfirm = () => {
     if (!canConfirm) return;
     localStorage.setItem(CUSTOMER_KEY, JSON.stringify(customer));
-    confirmedItem.current = { ...product, quantity: 1 };
+    setConfirmedItem({ ...product, quantity: 1 });
 
     const number = storeConfig.whatsappNumber.replace(/[^0-9+]/g, "");
     const price = product.priceUSD.toFixed(2);
@@ -84,6 +84,7 @@ export default function QuickBuyModal({ product, onClose, storeConfig }) {
     const url = `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
     window.open(url, "_blank");
     setConfirmed(true);
+    if (onOrderComplete) onOrderComplete();
   };
 
   return (
@@ -98,7 +99,7 @@ export default function QuickBuyModal({ product, onClose, storeConfig }) {
         </button>
 
         <div className="quickbuy-scroll">
-          {confirmed && confirmedItem.current ? (
+          {confirmed && confirmedItem ? (
             <>
               <div className="quickbuy-header" style={{ textAlign: "center" }}>
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ margin: "0 auto 0.5rem", display: "block" }}>
@@ -121,18 +122,18 @@ export default function QuickBuyModal({ product, onClose, storeConfig }) {
                     <strong>Item</strong>
                     <div className="quickbuy-confirmed-product">
                       <div className="quickbuy-product-image-wrapper">
-                        <Image src={confirmedItem.current.image} alt={confirmedItem.current.name} width={60} height={60} className="quickbuy-product-image" />
+                        <SafeImage src={confirmedItem.image} alt={confirmedItem.name} width={60} height={60} className="quickbuy-product-image" />
                       </div>
                       <div className="quickbuy-product-info">
-                        <strong className="quickbuy-product-name">{confirmedItem.current.name}</strong>
-                        <span className="quickbuy-product-price">${confirmedItem.current.priceUSD.toFixed(2)} USD</span>
+                        <strong className="quickbuy-product-name">{confirmedItem.name}</strong>
+                        <span className="quickbuy-product-price">${confirmedItem.priceUSD.toFixed(2)} USD</span>
                       </div>
-                      <span style={{ fontWeight: 600, whiteSpace: "nowrap", color: "var(--text-primary)" }}>${(confirmedItem.current.priceUSD * confirmedItem.current.quantity).toFixed(2)} USD</span>
+                      <span style={{ fontWeight: 600, whiteSpace: "nowrap", color: "var(--text-primary)" }}>${(confirmedItem.priceUSD * confirmedItem.quantity).toFixed(2)} USD</span>
                     </div>
                   </div>
                   <div className="quickbuy-total">
                     <strong>Total</strong>
-                    <span>${(confirmedItem.current.priceUSD * confirmedItem.current.quantity).toFixed(2)} USD</span>
+                    <span>${(confirmedItem.priceUSD * confirmedItem.quantity).toFixed(2)} USD</span>
                   </div>
                 </div>
               </div>
@@ -155,7 +156,7 @@ export default function QuickBuyModal({ product, onClose, storeConfig }) {
 
               <div className="quickbuy-product-preview">
                 <div className="quickbuy-product-image-wrapper">
-                  <Image src={product.image} alt={product.name} width={80} height={80} className="quickbuy-product-image" />
+                  <SafeImage src={product.image} alt={product.name} width={80} height={80} className="quickbuy-product-image" />
                 </div>
                 <div className="quickbuy-product-info">
                   <span className="quickbuy-product-category">{product.category}</span>
@@ -247,13 +248,6 @@ export default function QuickBuyModal({ product, onClose, storeConfig }) {
           justify-content: center;
         }
 
-        @media (min-width: 1024px) {
-          .quickbuy-wrapper {
-            justify-content: flex-end;
-            padding: 0 1.5rem 0 0;
-          }
-        }
-
         .quickbuy-overlay {
           position: fixed;
           top: 0; left: 0; right: 0; bottom: 0;
@@ -274,6 +268,18 @@ export default function QuickBuyModal({ product, onClose, storeConfig }) {
           display: flex;
           flex-direction: column;
           animation: slide-up 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        @media (min-width: 1024px) {
+          .quickbuy-wrapper {
+            justify-content: flex-end;
+            padding: 0 1.5rem 0 0;
+          }
+
+          .quickbuy-modal {
+            max-width: 420px;
+            width: min(32vw, 420px);
+          }
         }
 
         .quickbuy-scroll {
@@ -312,7 +318,7 @@ export default function QuickBuyModal({ product, onClose, storeConfig }) {
         }
 
         .quickbuy-header {
-          padding: 2rem 2rem 0.5rem;
+          padding: 2rem 1.5rem 0.5rem;
         }
 
         .quickbuy-title {
@@ -333,7 +339,7 @@ export default function QuickBuyModal({ product, onClose, storeConfig }) {
           display: flex;
           align-items: center;
           gap: 0.85rem;
-          margin: 0.5rem 2rem 0.5rem;
+          margin: 0.5rem 1.5rem 0.5rem;
           padding: 0.75rem;
           background: var(--bg-secondary);
           border-radius: var(--radius-md);
@@ -384,12 +390,12 @@ export default function QuickBuyModal({ product, onClose, storeConfig }) {
         }
 
         .quickbuy-body {
-          padding: 0.5rem 2rem 1rem;
+          padding: 0.5rem 1.5rem 1rem;
           flex: 1;
         }
 
         .quickbuy-footer {
-          padding: 0 2rem 2rem;
+          padding: 0 1.5rem 2rem;
         }
 
         .quickbuy-btn-primary {

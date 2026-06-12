@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import SafeImage from "@/components/SafeImage";
 
 export default function ProductCard({ product, onAddToCart, onOpenDetails, priority }) {
   // ── Extract product data + check for discount ──
@@ -13,14 +13,13 @@ export default function ProductCard({ product, onAddToCart, onOpenDetails, prior
       onClick={() => onOpenDetails(product)}
     >
       <div className={`product-card-image-wrapper ${ratioClass}`}>
-        <Image
+        <SafeImage
           src={image}
           alt={name}
           fill
           sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 33vw"
           className="product-card-image"
-          loading={priority ? undefined : "lazy"}
-          priority={priority || undefined}
+          priority={priority}
         />
         {hasDiscount && <span className="product-card-badge">OFFER</span>}
       </div>
