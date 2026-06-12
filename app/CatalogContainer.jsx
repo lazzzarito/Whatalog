@@ -6,6 +6,7 @@ import Image from "next/image";
 import FilterHeader from "@/components/FilterHeader";
 import MasonryGrid from "@/components/MasonryGrid";
 import ProductCard from "@/components/ProductCard";
+import { initPopupHistory } from "@/lib/popup-history";
 
 const ProductModal = dynamic(() => import("@/components/ProductModal"), { ssr: false });
 const Cart = dynamic(() => import("@/components/Cart"), { ssr: false });
@@ -65,6 +66,11 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
     return () => {
       if (persistTimerRef.current) clearTimeout(persistTimerRef.current);
     };
+  }, []);
+
+  useEffect(() => {
+    const cleanup = initPopupHistory(() => showToast("Press back again to exit", "warning"));
+    return cleanup;
   }, []);
 
   // ── Toast notifications ──
