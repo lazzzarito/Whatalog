@@ -150,29 +150,6 @@ export default function FilterHeader({
 
             <div className="category-nav-container" ref={navRef}>
               <nav className="category-nav">
-                <div
-                  ref={sortMenuRef}
-                  className="icon-btn-select-wrapper category-filter-icon"
-                  title="Filters"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowSortMenu(true);
-                  }}
-                >
-                  <button
-                    type="button"
-                    className="sort-toggle-btn"
-                    aria-expanded={showSortMenu}
-                    aria-label="Open filters"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="4" y1="6" x2="20" y2="6"></line>
-                      <line x1="4" y1="12" x2="16" y2="12"></line>
-                      <line x1="4" y1="18" x2="12" y2="18"></line>
-                    </svg>
-                  </button>
-                </div>
-
                 <button
                   className={`category-btn ${activeCategory === "all" ? "active" : ""}`}
                   onClick={() => onCategoryChange("all")}
