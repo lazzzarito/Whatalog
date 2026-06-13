@@ -88,7 +88,7 @@ export default function QuickBuyModal({ product, onClose, onOrderComplete, store
   };
 
   return (
-    <div className="quickbuy-wrapper">
+    <>
       <div className="quickbuy-overlay" onClick={onClose} />
       <div className="quickbuy-modal" onClick={(e) => e.stopPropagation()}>
         <button className="quickbuy-close" onClick={onClose}>
@@ -241,15 +241,6 @@ export default function QuickBuyModal({ product, onClose, onOrderComplete, store
       </div>
 
       <style jsx global>{`
-        .quickbuy-wrapper {
-          position: fixed;
-          top: 0; left: 0; right: 0; bottom: 0;
-          z-index: 300;
-          display: flex;
-          align-items: flex-end;
-          justify-content: center;
-        }
-
         .quickbuy-overlay {
           position: fixed;
           top: 0; left: 0; right: 0; bottom: 0;
@@ -259,29 +250,30 @@ export default function QuickBuyModal({ product, onClose, onOrderComplete, store
         }
 
         .quickbuy-modal {
-          position: relative;
+          position: fixed;
+          left: 0;
+          right: 0;
+          bottom: 0;
           z-index: 310;
           background: var(--bg-primary);
-          width: 100%;
           max-width: 500px;
-          max-height: 90svh;
+          max-height: 90dvh;
+          height: 90dvh;
           border-radius: var(--radius-lg) var(--radius-lg) 0 0;
           box-shadow: var(--shadow-lg);
           display: flex;
           flex-direction: column;
-          overflow: hidden;
           animation: slide-up 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
 
         @media (min-width: 1024px) {
-          .quickbuy-wrapper {
-            justify-content: flex-end;
-            padding: 0 1.5rem 0 0;
-          }
-
           .quickbuy-modal {
+            left: auto;
+            right: 1.5rem;
             max-width: 420px;
             width: min(32vw, 420px);
+            height: auto;
+            max-height: 90dvh;
           }
         }
 
@@ -583,6 +575,6 @@ export default function QuickBuyModal({ product, onClose, onOrderComplete, store
           to { transform: translateY(0); }
         }
       `}</style>
-    </div>
+    </>
   );
 }
