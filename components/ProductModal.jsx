@@ -8,6 +8,7 @@ import { useHistoryPopup } from "@/lib/use-history-popup";
 export default function ProductModal({ product, onClose, onAddToCart, storeConfig, onQuickBuy }) {
   // ── Track active image index for gallery ──
   const [activeImage, setActiveImage] = useState(0);
+  const [addingToCart, setAddingToCart] = useState(false);
 
   useEffect(() => {
     if (product) {
@@ -126,12 +127,30 @@ export default function ProductModal({ product, onClose, onAddToCart, storeConfi
                 </svg>
                 Buy
               </button>
-              <button className="btn-add-cart" onClick={() => { onAddToCart(product); onClose(); }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
-                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-                </svg>
-                Add to Cart
+              <button
+                className={`btn-add-cart${addingToCart ? ' added' : ''}`}
+                onClick={() => {
+                  onAddToCart(product);
+                  setAddingToCart(true);
+                  setTimeout(() => setAddingToCart(false), 2000);
+                }}
+              >
+                {addingToCart ? (
+                  <>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    Added
+                  </>
+                ) : (
+                  <>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
+                      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                    </svg>
+                    Add to Cart
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -419,6 +438,13 @@ export default function ProductModal({ product, onClose, onAddToCart, storeConfi
 
         .product-modal-footer-row .btn-add-cart:hover {
           opacity: 0.9;
+        }
+
+        .product-modal-footer-row .btn-add-cart.added {
+          background: var(--accent-green) !important;
+          color: #fff !important;
+          border-color: var(--accent-green) !important;
+          pointer-events: none;
         }
 
         .product-modal-footer-row .btn-direct-buy svg,

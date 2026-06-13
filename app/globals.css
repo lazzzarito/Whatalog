@@ -944,8 +944,9 @@ body {
 
 .toast-notification {
   position: fixed;
-  top: 4.5rem;
-  right: 1rem;
+  top: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 210;
   background: var(--accent-green);
   border: none;
@@ -957,7 +958,7 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  animation: toast-slide-in 0.24s ease;
+  animation: toast-drop-in 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   box-shadow: var(--shadow-md);
   display: flex;
   align-items: center;
@@ -974,15 +975,14 @@ body {
   }
 }
 
-@keyframes toast-slide-in {
+@keyframes toast-drop-in {
   from {
-    transform: translateX(20px);
     opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
   }
-
   to {
-    transform: translateX(0);
     opacity: 1;
+    transform: translateX(-50%) translateY(0);
   }
 }
 
