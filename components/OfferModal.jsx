@@ -59,10 +59,10 @@ export default function OfferModal({ products, onClose, onAddToCart, onOpenDetai
                     <span className="promo-modal-price">
                       {product.originalPrice && (
                         <span style={{ textDecoration: "line-through", color: "var(--text-secondary)", fontWeight: 400, marginRight: "0.4rem", fontSize: "0.75rem" }}>
-                          ${product.originalPrice.toFixed(2)} USD
+                          ${product.originalPrice.toFixed(2)}
                         </span>
                       )}
-                      ${product.priceUSD.toFixed(2)} USD
+                      ${product.priceUSD.toFixed(2)}
                     </span>
                   </div>
                   <button

@@ -80,10 +80,10 @@ export default function Cart({ cartItems, onUpdateQty, onRemoveItem, onClearCart
         const attrStr = Object.entries(item.attributes).map(([k, v]) => `${k}: ${v}`).join(" | ");
         message += `  _${attrStr}_\n`;
       }
-      message += `  $${item.priceUSD.toFixed(2)} USD → *$${itemUSD} USD*\n\n`;
+      message += `  $${item.priceUSD.toFixed(2)} → *$${itemUSD}*\n\n`;
     });
     message += `──────────────────────────\n`;
-    message += `*Total:* $${totalUSD.toFixed(2)} USD\n\n`;
+    message += `*Total:* $${totalUSD.toFixed(2)}\n\n`;
     message += `Thank you! We'll confirm shortly.`;
     return `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
   };
@@ -169,16 +169,16 @@ export default function Cart({ cartItems, onUpdateQty, onRemoveItem, onClearCart
                         <div className="cart-confirmed-product-info">
                           {item.category && <span className="cart-confirmed-product-category">{item.category}</span>}
                           <strong className="cart-confirmed-product-name">{item.quantity}x {item.name}</strong>
-                          <span className="cart-confirmed-product-price">${item.priceUSD.toFixed(2)} USD</span>
+                          <span className="cart-confirmed-product-price">${item.priceUSD.toFixed(2)}</span>
                         </div>
-                        <span className="cart-confirmed-product-total">${(item.priceUSD * item.quantity).toFixed(2)} USD</span>
+                        <span className="cart-confirmed-product-total">${(item.priceUSD * item.quantity).toFixed(2)}</span>
                       </div>
                     ))}
                   </div>
 
                   <div className="cart-confirmed-total">
                     <strong>Total</strong>
-                    <span>${itemsToShow.reduce((s, i) => s + i.priceUSD * i.quantity, 0).toFixed(2)} USD</span>
+                    <span>${itemsToShow.reduce((s, i) => s + i.priceUSD * i.quantity, 0).toFixed(2)}</span>
                   </div>
                 </div>
               </div>
@@ -219,7 +219,7 @@ export default function Cart({ cartItems, onUpdateQty, onRemoveItem, onClearCart
                   <div className="cart-item-details">
                     {item.category && <span className="cart-item-category">{item.category}</span>}
                     <span className="cart-item-title">{item.name}</span>
-                    <span className="cart-item-price">${item.priceUSD.toFixed(2)} USD</span>
+                    <span className="cart-item-price">${item.priceUSD.toFixed(2)}</span>
                     <div className="cart-item-actions">
                       <div className="cart-item-qty-controls">
                         <button className="qty-btn" onClick={() => onUpdateQty(item.id, item.quantity - 1)} title="Decrease quantity">
@@ -320,7 +320,7 @@ export default function Cart({ cartItems, onUpdateQty, onRemoveItem, onClearCart
           <div className="cart-footer">
             <div className="cart-summary-row">
               <span className="cart-total-label">Total</span>
-              <span className="cart-total-primary">${totalUSD.toFixed(2)} USD</span>
+              <span className="cart-total-primary">${totalUSD.toFixed(2)}</span>
             </div>
             <button className="btn-checkout" onClick={() => setStep(2)}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

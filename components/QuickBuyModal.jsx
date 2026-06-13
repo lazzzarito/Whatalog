@@ -73,10 +73,10 @@ export default function QuickBuyModal({ product, onClose, onOrderComplete, store
       `──────────────────────────`,
       `*Products:*`,
       `• *1x* ${product.name}`,
-      `  $${product.priceUSD.toFixed(2)} USD → *$${price} USD*`,
+      `  $${product.priceUSD.toFixed(2)} → *$${price}*`,
       ``,
       `──────────────────────────`,
-      `*Total:* $${price} USD`,
+      `*Total:* $${price}`,
       ``,
       `Thank you! We'll confirm shortly.`,
     ].filter(Boolean).join("\n");
@@ -126,14 +126,14 @@ export default function QuickBuyModal({ product, onClose, onOrderComplete, store
                       </div>
                       <div className="quickbuy-product-info">
                         <strong className="quickbuy-product-name">{confirmedItem.name}</strong>
-                        <span className="quickbuy-product-price">${confirmedItem.priceUSD.toFixed(2)} USD</span>
+                        <span className="quickbuy-product-price">${confirmedItem.priceUSD.toFixed(2)}</span>
                       </div>
-                      <span style={{ fontWeight: 600, whiteSpace: "nowrap", color: "var(--text-primary)" }}>${(confirmedItem.priceUSD * confirmedItem.quantity).toFixed(2)} USD</span>
+                      <span style={{ fontWeight: 600, whiteSpace: "nowrap", color: "var(--text-primary)" }}>${(confirmedItem.priceUSD * confirmedItem.quantity).toFixed(2)}</span>
                     </div>
                   </div>
                   <div className="quickbuy-total">
                     <strong>Total</strong>
-                    <span>${(confirmedItem.priceUSD * confirmedItem.quantity).toFixed(2)} USD</span>
+                    <span>${(confirmedItem.priceUSD * confirmedItem.quantity).toFixed(2)}</span>
                   </div>
                 </div>
               </div>
@@ -161,7 +161,7 @@ export default function QuickBuyModal({ product, onClose, onOrderComplete, store
                 <div className="quickbuy-product-info">
                   <span className="quickbuy-product-category">{product.category}</span>
                   <strong className="quickbuy-product-name">{product.name}</strong>
-                  <span className="quickbuy-product-price">${product.priceUSD.toFixed(2)} USD</span>
+                  <span className="quickbuy-product-price">${product.priceUSD.toFixed(2)}</span>
                 </div>
               </div>
 

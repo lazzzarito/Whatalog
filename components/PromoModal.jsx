@@ -67,7 +67,7 @@ export default function PromoModal({ promo, products, onClose, onAddToCart, onOp
                     <div className="promo-modal-info">
                       <span className="promo-modal-category">{product.category}</span>
                       <strong className="promo-modal-name">{product.name}</strong>
-                      <span className="promo-modal-price">${product.priceUSD.toFixed(2)} USD</span>
+                      <span className="promo-modal-price">${product.priceUSD.toFixed(2)}</span>
                     </div>
                     <button
                       className="promo-modal-add"

@@ -30,8 +30,8 @@ export default function ProductCard({ product, onAddToCart, onOpenDetails, prior
 
         <div className="product-card-price-row">
           <div className="product-price-container">
-            {hasDiscount && <span className="price-original">${originalPrice.toFixed(2)} USD</span>}
-            <span className="price-primary">${priceUSD.toFixed(2)} USD</span>
+            {hasDiscount && <span className="price-original">${originalPrice.toFixed(2)}</span>}
+            <span className="price-primary">${priceUSD.toFixed(2)}</span>
           </div>
           <button
             className="btn-add-to-cart"

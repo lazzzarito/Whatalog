@@ -25,7 +25,7 @@ export default function ProductModal({ product, onClose, onAddToCart, storeConfi
   const hasAttributes = attributes && Object.keys(attributes).length > 0;
 
   const handleShare = async () => {
-    const text = `Check this out: ${name} - $${priceUSD} USD`;
+    const text = `Check this out: ${name} - $${priceUSD}`;
     const url = window.location.href;
     if (navigator.share) {
       await navigator.share({ title: name, text, url }).catch(() => {});
@@ -87,8 +87,8 @@ export default function ProductModal({ product, onClose, onAddToCart, storeConfi
                 <h2 className="product-modal-title">{name}</h2>
 
                 <div className="product-modal-prices">
-                  {hasDiscount && <span className="price-original">${originalPrice.toFixed(2)} USD</span>}
-                  <span className="price-primary">${priceUSD.toFixed(2)} USD</span>
+                  {hasDiscount && <span className="price-original">${originalPrice.toFixed(2)}</span>}
+                  <span className="price-primary">${priceUSD.toFixed(2)}</span>
                   {hasDiscount && <span className="product-modal-badge">OFFER</span>}
                 </div>
 
