@@ -269,7 +269,7 @@ export default function QuickBuyModal({ product, onClose, onOrderComplete, store
           box-shadow: var(--shadow-lg);
           display: flex;
           flex-direction: column;
-          min-height: 0;
+          overflow: hidden;
           animation: slide-up 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
 
