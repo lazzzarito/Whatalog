@@ -950,7 +950,7 @@ body {
   background: var(--accent-green);
   border: none;
   border-radius: 999px;
-  padding: 0.85rem 1.25rem;
+  padding: 0.65rem 1.25rem;
   color: #fff;
   font-size: 0.9rem;
   max-width: calc(100% - 2rem);
@@ -959,6 +959,13 @@ body {
   text-overflow: ellipsis;
   animation: toast-slide-in 0.24s ease;
   box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.toast-notification svg {
+  flex-shrink: 0;
 }
 
 @media (min-width: 480px) {
