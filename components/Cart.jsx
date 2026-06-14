@@ -76,7 +76,10 @@ export default function Cart({ cartItems, onUpdateQty, onRemoveItem, onClearCart
     cartItems.forEach((item) => {
       const itemUSD = (item.priceUSD * item.quantity).toFixed(2);
       message += `• *${item.quantity}x* ${item.name}\n`;
-      if (item.attributes && Object.keys(item.attributes).length > 0) {
+      if (item.selectedOptions && Object.keys(item.selectedOptions).length > 0) {
+        const optStr = Object.entries(item.selectedOptions).map(([k, v]) => `${k}: ${v}`).join(" | ");
+        message += `  _${optStr}_\n`;
+      } else if (item.attributes && Object.keys(item.attributes).length > 0) {
         const attrStr = Object.entries(item.attributes).map(([k, v]) => `${k}: ${v}`).join(" | ");
         message += `  _${attrStr}_\n`;
       }
@@ -169,6 +172,11 @@ export default function Cart({ cartItems, onUpdateQty, onRemoveItem, onClearCart
                         <div className="cart-confirmed-product-info">
                           {item.category && <span className="cart-confirmed-product-category">{item.category}</span>}
                           <strong className="cart-confirmed-product-name">{item.quantity}x {item.name}</strong>
+                          {item.selectedOptions && Object.keys(item.selectedOptions).length > 0 && (
+                            <span style={{ fontSize: "0.72rem", color: "var(--text-secondary)", display: "block", marginTop: "0.1rem" }}>
+                              {Object.entries(item.selectedOptions).map(([k, v]) => `${k}: ${v}`).join(" | ")}
+                            </span>
+                          )}
                           <span className="cart-confirmed-product-price">${item.priceUSD.toFixed(2)}</span>
                         </div>
                         <span className="cart-confirmed-product-total">${(item.priceUSD * item.quantity).toFixed(2)}</span>
@@ -219,6 +227,11 @@ export default function Cart({ cartItems, onUpdateQty, onRemoveItem, onClearCart
                   <div className="cart-item-details">
                     {item.category && <span className="cart-item-category">{item.category}</span>}
                     <span className="cart-item-title">{item.name}</span>
+                    {item.selectedOptions && Object.keys(item.selectedOptions).length > 0 && (
+                      <span style={{ fontSize: "0.75rem", color: "var(--text-secondary)", display: "block", marginBottom: "0.2rem" }}>
+                        {Object.entries(item.selectedOptions).map(([k, v]) => `${k}: ${v}`).join(" | ")}
+                      </span>
+                    )}
                     <span className="cart-item-price">${item.priceUSD.toFixed(2)}</span>
                     <div className="cart-item-actions">
                       <div className="cart-item-qty-controls">

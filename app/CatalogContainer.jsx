@@ -90,16 +90,52 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
   }, []);
 
   // ── Cart actions ──
-  const handleAddToCart = (product) => {
-    const existing = cartItems.find((item) => item.id === product.id);
+  const handleAddToCart = (product, selectedOptions = null) => {
+    let cartItemId = product.id;
+    let finalPrice = product.priceUSD;
+    let finalOriginalPrice = product.originalPrice;
+
+    if (selectedOptions && Object.keys(selectedOptions).length > 0) {
+      const optionParts = Object.entries(selectedOptions)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([k, v]) => `${k}:${v}`)
+        .join("-");
+      cartItemId = `${product.id}-${optionParts}`;
+
+      if (product.options) {
+        Object.entries(selectedOptions).forEach(([optionKey, selectedValName]) => {
+          const optGroup = product.options[optionKey];
+          if (optGroup) {
+            const matchedVal = optGroup.find((o) => o.name === selectedValName);
+            if (matchedVal && matchedVal.priceUSD !== undefined) {
+              finalPrice = matchedVal.priceUSD;
+              finalOriginalPrice = matchedVal.originalPrice !== undefined ? matchedVal.originalPrice : null;
+            }
+          }
+        });
+      }
+    }
+
+    const existing = cartItems.find((item) => item.id === cartItemId);
     if (existing) {
       saveCart(
         cartItems.map((item) =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+          item.id === cartItemId ? { ...item, quantity: item.quantity + 1 } : item
         )
       );
     } else {
-      saveCart([...cartItems, { ...product, quantity: 1 }]);
+      saveCart([
+        ...cartItems,
+        {
+          ...product,
+          id: cartItemId,
+          productId: product.id,
+          priceUSD: finalPrice,
+          originalPrice: finalOriginalPrice,
+          selectedOptions,
+          quantity: 1,
+        },
+      ]);
     }
     showToast(`Added: ${product.name}`);
   };

@@ -69,9 +69,14 @@ export default function OfferModal({ products, onClose, onAddToCart, onOpenDetai
                     className="promo-modal-add"
                     onClick={(e) => {
                       e.stopPropagation();
-                      onAddToCart(product);
+                      if (product.options && Object.keys(product.options).length > 0) {
+                        onOpenDetails(product);
+                        onClose();
+                      } else {
+                        onAddToCart(product);
+                      }
                     }}
-                    title="Add to cart"
+                    title={product.options && Object.keys(product.options).length > 0 ? "Select options" : "Add to cart"}
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                       <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />

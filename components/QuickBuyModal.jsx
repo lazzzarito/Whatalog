@@ -21,9 +21,19 @@ export default function QuickBuyModal({ product, onClose, onOrderComplete, store
   const [customer, setCustomer] = useState(defaultCustomer);
   const [confirmed, setConfirmed] = useState(false);
   const [confirmedItem, setConfirmedItem] = useState(null);
+  const [selectedOptions, setSelectedOptions] = useState({});
 
   useEffect(() => {
     if (product) {
+      setSelectedOptions(product.selectedOptions || (() => {
+        const defaults = {};
+        if (product.options) {
+          Object.entries(product.options).forEach(([k, v]) => {
+            if (v && v.length > 0) defaults[k] = v[0].name;
+          });
+        }
+        return defaults;
+      })());
       const unlock = lockBodyScroll();
       const handler = (e) => { if (e.key === "Escape") onClose(); };
       document.addEventListener("keydown", handler);
@@ -38,6 +48,8 @@ export default function QuickBuyModal({ product, onClose, onOrderComplete, store
 
   if (!product) return null;
 
+  const { name, priceUSD, originalPrice, category, images, description, options } = product;
+
   const update = (field, value) => setCustomer((prev) => ({ ...prev, [field]: value }));
 
   const PAYMENT_OPTIONS = [
@@ -50,15 +62,44 @@ export default function QuickBuyModal({ product, onClose, onOrderComplete, store
     "Other",
   ];
 
+  // Compute dynamic price and active image
+  let activePrice = priceUSD;
+  let activeOriginalPrice = originalPrice;
+  let activeImage = product.image;
+
+  if (options && Object.keys(selectedOptions).length > 0) {
+    Object.entries(selectedOptions).forEach(([optionKey, selectedValName]) => {
+      const optGroup = options[optionKey];
+      if (optGroup) {
+        const matchedVal = optGroup.find((o) => o.name === selectedValName);
+        if (matchedVal) {
+          if (matchedVal.priceUSD !== undefined) {
+            activePrice = matchedVal.priceUSD;
+            activeOriginalPrice = matchedVal.originalPrice !== undefined ? matchedVal.originalPrice : null;
+          }
+          if (matchedVal.image) {
+            activeImage = matchedVal.image;
+          }
+        }
+      }
+    });
+  }
+
   const canConfirm = customer.name && customer.phone && customer.payment && (customer.delivery === "pickup" || customer.delivery === "delivery");
 
   const handleConfirm = () => {
     if (!canConfirm) return;
     localStorage.setItem(CUSTOMER_KEY, JSON.stringify(customer));
-    setConfirmedItem({ ...product, quantity: 1 });
+    setConfirmedItem({ ...product, priceUSD: activePrice, originalPrice: activeOriginalPrice, image: activeImage, selectedOptions, quantity: 1 });
 
     const number = storeConfig.whatsappNumber.replace(/[^0-9+]/g, "");
-    const price = product.priceUSD.toFixed(2);
+    const priceStr = activePrice.toFixed(2);
+    
+    let optStr = "";
+    if (selectedOptions && Object.keys(selectedOptions).length > 0) {
+      optStr = " (" + Object.entries(selectedOptions).map(([k, v]) => `${k}: ${v}`).join(" | ") + ")";
+    }
+
     let message = [
       `🛒 *New Order - ${storeConfig.name}*`,
       `──────────────────────────`,
@@ -72,11 +113,11 @@ export default function QuickBuyModal({ product, onClose, onOrderComplete, store
       ``,
       `──────────────────────────`,
       `*Products:*`,
-      `• *1x* ${product.name}`,
-      `  $${product.priceUSD.toFixed(2)} → *$${price}*`,
+      `• *1x* ${product.name}${optStr}`,
+      `  $${activePrice.toFixed(2)} → *$${priceStr}*`,
       ``,
       `──────────────────────────`,
-      `*Total:* $${price}`,
+      `*Total:* $${priceStr}`,
       ``,
       `Thank you! We'll confirm shortly.`,
     ].filter(Boolean).join("\n");
@@ -126,6 +167,11 @@ export default function QuickBuyModal({ product, onClose, onOrderComplete, store
                       </div>
                       <div className="quickbuy-product-info">
                         <strong className="quickbuy-product-name">{confirmedItem.name}</strong>
+                        {confirmedItem.selectedOptions && Object.keys(confirmedItem.selectedOptions).length > 0 && (
+                          <span style={{ fontSize: "0.75rem", color: "var(--text-secondary)", display: "block", marginTop: "0.15rem" }}>
+                            {Object.entries(confirmedItem.selectedOptions).map(([k, v]) => `${k}: ${v}`).join(" | ")}
+                          </span>
+                        )}
                         <span className="quickbuy-product-price">${confirmedItem.priceUSD.toFixed(2)}</span>
                       </div>
                       <span style={{ fontWeight: 600, whiteSpace: "nowrap", color: "var(--text-primary)" }}>${(confirmedItem.priceUSD * confirmedItem.quantity).toFixed(2)}</span>
@@ -146,14 +192,41 @@ export default function QuickBuyModal({ product, onClose, onOrderComplete, store
 
               <div className="quickbuy-product-preview">
                 <div className="quickbuy-product-image-wrapper">
-                  <SafeImage src={product.image} alt={product.name} width={80} height={80} className="quickbuy-product-image" />
+                  <SafeImage src={activeImage} alt={name} width={80} height={80} className="quickbuy-product-image" />
                 </div>
                 <div className="quickbuy-product-info">
-                  <span className="quickbuy-product-category">{product.category}</span>
-                  <strong className="quickbuy-product-name">{product.name}</strong>
-                  <span className="quickbuy-product-price">${product.priceUSD.toFixed(2)}</span>
+                  <span className="quickbuy-product-category">{category}</span>
+                  <strong className="quickbuy-product-name">{name}</strong>
+                  <span className="quickbuy-product-price">${activePrice.toFixed(2)}</span>
                 </div>
               </div>
+
+              {options && Object.keys(options).length > 0 && (
+                <div className="quickbuy-options" style={{ margin: "0.5rem 1.5rem 1rem", display: "flex", flexDirection: "column", gap: "0.85rem" }}>
+                  {Object.entries(options).map(([optionKey, values]) => (
+                    <div className="quickbuy-option-group" key={optionKey} style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                      <span className="quickbuy-option-label" style={{ fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--text-secondary)" }}>{optionKey}</span>
+                      <div className="quickbuy-option-values" style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}>
+                        {values.map((val) => {
+                          const isSelected = selectedOptions[optionKey] === val.name;
+                          const hasPriceOverride = val.priceUSD !== undefined;
+                          return (
+                            <button
+                              key={val.name}
+                              className={`qchip${isSelected ? " active" : ""}`}
+                              style={{ margin: 0, outline: "none", border: "1px solid var(--border-color)", padding: "0.35rem 0.75rem", borderRadius: "15px", fontSize: "0.78rem", cursor: "pointer", transition: "all 0.2s" }}
+                              onClick={() => setSelectedOptions(prev => ({ ...prev, [optionKey]: val.name }))}
+                            >
+                              {val.name}
+                              {hasPriceOverride && ` ($${val.priceUSD.toFixed(2)})`}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
 
               <div className="quickbuy-body">
                 <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)", marginBottom: "1rem", lineHeight: 1.5 }}>

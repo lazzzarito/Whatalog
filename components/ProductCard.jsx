@@ -35,10 +35,14 @@ export default function ProductCard({ product, onAddToCart, onOpenDetails, prior
           </div>
           <button
             className="btn-add-to-cart"
-            title="Add to cart"
+            title={product.options && Object.keys(product.options).length > 0 ? "Select options" : "Add to cart"}
             onClick={(e) => {
               e.stopPropagation();
-              onAddToCart(product);
+              if (product.options && Object.keys(product.options).length > 0) {
+                onOpenDetails(product);
+              } else {
+                onAddToCart(product);
+              }
             }}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

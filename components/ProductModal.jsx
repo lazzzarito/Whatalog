@@ -9,9 +9,20 @@ export default function ProductModal({ product, onClose, onAddToCart, storeConfi
   // ── Track active image index for gallery ──
   const [activeImage, setActiveImage] = useState(0);
   const [addingToCart, setAddingToCart] = useState(false);
+  const [selectedOptions, setSelectedOptions] = useState({});
 
   useEffect(() => {
     if (product) {
+      const defaults = {};
+      if (product.options) {
+        Object.entries(product.options).forEach(([key, values]) => {
+          if (values && values.length > 0) {
+            defaults[key] = values[0].name;
+          }
+        });
+      }
+      setSelectedOptions(defaults);
+      setActiveImage(0);
       return lockBodyScroll();
     }
   }, [product]);
@@ -20,13 +31,61 @@ export default function ProductModal({ product, onClose, onAddToCart, storeConfi
 
   if (!product) return null;
 
-  const { name, priceUSD, originalPrice, category, images, description, contentHtml, attributes } = product;
-  const productImages = images && images.length > 0 ? images : [product.image];
-  const hasDiscount = originalPrice && originalPrice > priceUSD;
+  const { name, priceUSD, originalPrice, category, images, description, contentHtml, attributes, options } = product;
+
+  // Build image list dynamically, including any option-specific images that aren't already present
+  let baseImages = images && images.length > 0 ? [...images] : [product.image];
+  if (options) {
+    Object.values(options).forEach((values) => {
+      if (Array.isArray(values)) {
+        values.forEach((val) => {
+          if (val && val.image && !baseImages.includes(val.image)) {
+            baseImages.push(val.image);
+          }
+        });
+      }
+    });
+  }
+  const productImages = baseImages;
+
+  // Compute dynamic price and original price based on selected options
+  let activePrice = priceUSD;
+  let activeOriginalPrice = originalPrice;
+
+  if (options && Object.keys(selectedOptions).length > 0) {
+    Object.entries(selectedOptions).forEach(([optionKey, selectedValName]) => {
+      const optGroup = options[optionKey];
+      if (optGroup) {
+        const matchedVal = optGroup.find((o) => o.name === selectedValName);
+        if (matchedVal && matchedVal.priceUSD !== undefined) {
+          activePrice = matchedVal.priceUSD;
+          activeOriginalPrice = matchedVal.originalPrice !== undefined ? matchedVal.originalPrice : null;
+        }
+      }
+    });
+  }
+
+  const hasDiscount = activeOriginalPrice && activeOriginalPrice > activePrice;
   const hasAttributes = attributes && Object.keys(attributes).length > 0;
 
+  const handleOptionSelect = (optionKey, valName) => {
+    setSelectedOptions((prev) => {
+      const updated = { ...prev, [optionKey]: valName };
+      if (options && options[optionKey]) {
+        const optionObj = options[optionKey].find((o) => o.name === valName);
+        if (optionObj && optionObj.image) {
+          const imgIndex = productImages.findIndex((img) => img === optionObj.image);
+          if (imgIndex !== -1) {
+            setActiveImage(imgIndex);
+          }
+        }
+      }
+      return updated;
+    });
+  };
+
   const handleShare = async () => {
-    const text = `Check this out: ${name} - $${priceUSD}`;
+    const text = `Check this out: ${name} - $${activePrice.toFixed(2)}`;
     const url = window.location.href;
     if (navigator.share) {
       await navigator.share({ title: name, text, url }).catch(() => {});
@@ -36,7 +95,7 @@ export default function ProductModal({ product, onClose, onAddToCart, storeConfi
   };
 
   const handleDirectBuy = () => {
-    onQuickBuy(product);
+    onQuickBuy({ ...product, selectedOptions });
   };
 
   return (
@@ -88,10 +147,40 @@ export default function ProductModal({ product, onClose, onAddToCart, storeConfi
                 <h2 className="product-modal-title">{name}</h2>
 
                 <div className="product-modal-prices">
-                  {hasDiscount && <span className="price-original">${originalPrice.toFixed(2)}</span>}
-                  <span className="price-primary">${priceUSD.toFixed(2)}</span>
+                  {hasDiscount && <span className="price-original">${activeOriginalPrice.toFixed(2)}</span>}
+                  <span className="price-primary">${activePrice.toFixed(2)}</span>
                   {hasDiscount && <span className="product-modal-badge">OFFER</span>}
                 </div>
+
+                {options && Object.keys(options).length > 0 && (
+                  <div className="product-modal-options">
+                    {Object.entries(options).map(([optionKey, values]) => (
+                      <div className="product-modal-option-group" key={optionKey}>
+                        <span className="product-modal-option-label">{optionKey}</span>
+                        <div className="product-modal-option-values">
+                          {values.map((val) => {
+                            const isSelected = selectedOptions[optionKey] === val.name;
+                            const hasPriceOverride = val.priceUSD !== undefined;
+                            return (
+                              <button
+                                key={val.name}
+                                className={`product-modal-option-pill${isSelected ? " active" : ""}`}
+                                onClick={() => handleOptionSelect(optionKey, val.name)}
+                              >
+                                {val.name}
+                                {hasPriceOverride && (
+                                  <span className="product-modal-option-price-badge">
+                                    (${val.priceUSD.toFixed(2)})
+                                  </span>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 {hasAttributes && (
                   <div className="product-modal-attributes">
@@ -130,7 +219,7 @@ export default function ProductModal({ product, onClose, onAddToCart, storeConfi
               <button
                 className={`btn-add-cart${addingToCart ? ' added' : ''}`}
                 onClick={() => {
-                  onAddToCart(product);
+                  onAddToCart(product, selectedOptions);
                   setAddingToCart(true);
                   setTimeout(() => setAddingToCart(false), 2000);
                 }}
@@ -330,6 +419,68 @@ export default function ProductModal({ product, onClose, onAddToCart, storeConfi
           letter-spacing: 0.04em;
           padding: 0.2rem 0.55rem;
           border-radius: 6px;
+        }
+
+        .product-modal-options {
+          display: flex;
+          flex-direction: column;
+          gap: 1.25rem;
+          padding-bottom: 1.25rem;
+          margin-bottom: 1.25rem;
+          border-bottom: 1px solid var(--border-color);
+        }
+
+        .product-modal-option-group {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+
+        .product-modal-option-label {
+          font-size: 0.75rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          color: var(--text-secondary);
+        }
+
+        .product-modal-option-values {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.5rem;
+        }
+
+        .product-modal-option-pill {
+          background: var(--bg-secondary);
+          border: 1.5px solid var(--border-color);
+          color: var(--text-primary);
+          padding: 0.5rem 1rem;
+          border-radius: 20px;
+          font-size: 0.82rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          display: flex;
+          align-items: center;
+          gap: 0.35rem;
+        }
+
+        .product-modal-option-pill:hover {
+          border-color: var(--text-secondary);
+          background: var(--border-color);
+        }
+
+        .product-modal-option-pill.active {
+          background: var(--text-primary) !important;
+          color: var(--bg-primary) !important;
+          border-color: var(--text-primary) !important;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .product-modal-option-price-badge {
+          font-size: 0.72rem;
+          opacity: 0.85;
+          font-weight: 500;
         }
 
         .product-modal-attributes {
