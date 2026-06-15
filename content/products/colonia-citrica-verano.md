@@ -3,6 +3,7 @@ id: "colonia-citrica-verano"
 name: "Citrus Summer Cologne"
 priceUSD: 22.00
 originalPrice: 28.00
+stock: 9
 category: "Perfumery"
 image: "https://images.unsplash.com/photo-1587017539504-67cfbddac569?q=80&w=600&auto=format&fit=crop"
 description: "Bright and invigorating cologne with top notes of grapefruit and bergamot. A refreshing summer staple."

@@ -35,6 +35,7 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
   const catalogRef = useRef(null);
   const offersRef = useRef(null);
   const persistTimerRef = useRef(null);
+  const [productQtyMap, setProductQtyMap] = useState({});
 
   useEffect(() => {
     startTransition(() => {
@@ -90,7 +91,7 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
   }, []);
 
   // ── Cart actions ──
-  const handleAddToCart = (product, selectedOptions = null) => {
+  const handleAddToCart = (product, selectedOptions = null, qty = 1) => {
     let cartItemId = product.id;
     let finalPrice = product.priceUSD;
     let finalOriginalPrice = product.originalPrice;
@@ -120,7 +121,7 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
     if (existing) {
       saveCart(
         cartItems.map((item) =>
-          item.id === cartItemId ? { ...item, quantity: item.quantity + 1 } : item
+          item.id === cartItemId ? { ...item, quantity: item.quantity + qty } : item
         )
       );
     } else {
@@ -133,11 +134,12 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
           priceUSD: finalPrice,
           originalPrice: finalOriginalPrice,
           selectedOptions,
-          quantity: 1,
+          quantity: qty,
         },
       ]);
     }
     showToast(`Added: ${product.name}`);
+    clearProductQty(product.id);
   };
 
   const handleUpdateQty = (id, qty) => {
@@ -289,13 +291,29 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
   const promoBanners = storeConfig.promoBanners || [];
 
   const offerProducts = useMemo(() => {
-    return initialProducts.filter((p) => p.offer).map((p) => ({ ...p, ratioClass: "ratio-square" }));
+    return initialProducts.filter((p) => p.offer && p.originalPrice && p.originalPrice > p.priceUSD);
   }, [initialProducts]);
 
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedPromo, setSelectedPromo] = useState(null);
   const [quickBuyProduct, setQuickBuyProduct] = useState(null);
   const [showOffers, setShowOffers] = useState(false);
+
+  const productQty = selectedProduct ? (productQtyMap[selectedProduct.id] ?? 1) : 1;
+
+  const handleQtyChange = useCallback((qty) => {
+    if (selectedProduct) {
+      setProductQtyMap((prev) => ({ ...prev, [selectedProduct.id]: qty }));
+    }
+  }, [selectedProduct]);
+
+  const clearProductQty = useCallback((productId) => {
+    setProductQtyMap((prev) => {
+      const next = { ...prev };
+      delete next[productId];
+      return next;
+    });
+  }, []);
 
   const handlePromoClick = useCallback((index) => {
     const links = storeConfig.promoLinks || [];
@@ -387,8 +405,8 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
                 </svg>
               </button>
             </h2>
-            <div className="featured-grid">
-              {offerProducts.slice(0, 4).map((product) => (
+            <MasonryGrid>
+              {offerProducts.slice(0, 8).map((product) => (
                 <ProductCard
                   key={product.id}
                   product={product}
@@ -397,7 +415,7 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
                   priority
                 />
               ))}
-            </div>
+            </MasonryGrid>
           </section>
         )}
 
@@ -485,14 +503,17 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
         onAddToCart={handleAddToCart}
         storeConfig={storeConfig}
         onQuickBuy={setQuickBuyProduct}
+        productQty={productQty}
+        onQtyChange={handleQtyChange}
       />
 
       {quickBuyProduct && (
         <QuickBuyModal
           product={quickBuyProduct}
           onClose={() => setQuickBuyProduct(null)}
-          onOrderComplete={() => setSelectedProduct(null)}
+          onOrderComplete={() => { if (quickBuyProduct?.id) clearProductQty(quickBuyProduct.id); setSelectedProduct(null); }}
           storeConfig={storeConfig}
+          onQtyChange={handleQtyChange}
         />
       )}
 
@@ -677,6 +698,33 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
       {/* ── Footer with map & social links ── */}
       <footer className="app-footer-minimal">
         <div className="footer-map-card">
+          <div className="footer-map-header">
+            <h3 className="footer-map-title">Location</h3>
+            <div className="footer-map-actions">
+              <a
+                href={storeConfig.trustpilotUrl || "https://www.trustpilot.com"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="footer-map-btn"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+                Rate on Trustpilot
+              </a>
+              <a
+                href={storeConfig.googleMapsUrl || `https://www.google.com/maps/search/${encodeURIComponent(storeConfig.location)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="footer-map-btn"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                </svg>
+                Open in Google Maps
+              </a>
+            </div>
+          </div>
           <div className="footer-map-frame">
             <iframe
               title="Store location"
@@ -690,7 +738,7 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
         </div>
 
         <div className="footer-bottom-row">
-          <div className="social-links" style={{ justifyContent: "center", marginBottom: "0.75rem" }}>
+          <div className="social-links">
             <a href="https://github.com/lazzzarito/Whatalog" target="_blank" rel="noopener noreferrer" className="social-icon-btn" title="GitHub">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>

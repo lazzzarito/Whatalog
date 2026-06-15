@@ -2,6 +2,7 @@
 id: "yoga-mat-premium"
 name: "Premium Yoga Mat"
 priceUSD: 32.00
+stock: 28
 category: "Sports"
 image: "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?q=80&w=600&auto=format&fit=crop"
 description: "Non-slip eco-friendly yoga mat with alignment lines. 6mm thickness for optimal comfort and stability."

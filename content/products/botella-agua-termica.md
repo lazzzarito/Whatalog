@@ -2,6 +2,9 @@
 id: "botella-agua-termica"
 name: "Insulated Water Bottle"
 priceUSD: 28.00
+originalPrice: 38.00
+stock: 7
+offer: true
 category: "Home"
 image: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?q=80&w=600&auto=format&fit=crop"
 description: "Double-wall vacuum insulated stainless steel bottle. Keeps drinks cold for 24 hours or hot for 12 hours, 24 oz capacity."

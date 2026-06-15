@@ -3,6 +3,7 @@ id: "serum-vitamina-c"
 name: "Vitamin C Brightening Serum"
 priceUSD: 19.99
 originalPrice: 26.00
+stock: 10
 category: "Cosmetics"
 image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?q=80&w=600&auto=format&fit=crop"
 description: "Concentrated 20% vitamin C serum with hyaluronic acid and vitamin E. Brightens skin and reduces dark spots."

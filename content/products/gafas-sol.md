@@ -2,6 +2,7 @@
 id: "gafas-sol"
 name: "Retro Round Sunglasses"
 priceUSD: 16.00
+stock: 30
 category: "Accessories"
 # External URL images are supported (no API route needed)
 image: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?q=80&w=600&auto=format&fit=crop"

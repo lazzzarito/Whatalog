@@ -2,6 +2,7 @@
 id: "gafas-aviador-polarizadas"
 name: "Polarized Aviator Sunglasses"
 priceUSD: 38.00
+stock: 20
 category: "Accessories"
 image: "https://images.unsplash.com/photo-1508296695146-257a814070b4?q=80&w=600&auto=format&fit=crop"
 description: "Classic aviator sunglasses with polarized green lenses. Gold metal frame with adjustable nose pads for a custom fit."

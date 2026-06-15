@@ -2,6 +2,7 @@
 id: "zapatillas-lona"
 name: "Canvas Platform Sneakers"
 priceUSD: 42.00
+stock: 18
 category: "Clothing"
 image: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?q=80&w=600&auto=format&fit=crop"
 description: "Low-top canvas sneakers with a chunky platform sole. Padded insole for all-day comfort and a retro streetwear vibe."

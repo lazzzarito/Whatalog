@@ -17,11 +17,12 @@ const defaultCustomer = () => {
   return { name: "", phone: "", delivery: "pickup", address: "", payment: "", paymentOther: "" };
 };
 
-export default function QuickBuyModal({ product, onClose, onOrderComplete, storeConfig }) {
+export default function QuickBuyModal({ product, onClose, onOrderComplete, storeConfig, onQtyChange }) {
   const [customer, setCustomer] = useState(defaultCustomer);
   const [confirmed, setConfirmed] = useState(false);
   const [confirmedItem, setConfirmedItem] = useState(null);
   const [selectedOptions, setSelectedOptions] = useState({});
+  const [qty, setQty] = useState(product?.quantity || 1);
 
   useEffect(() => {
     if (product) {
@@ -90,7 +91,7 @@ export default function QuickBuyModal({ product, onClose, onOrderComplete, store
   const handleConfirm = () => {
     if (!canConfirm) return;
     localStorage.setItem(CUSTOMER_KEY, JSON.stringify(customer));
-    setConfirmedItem({ ...product, priceUSD: activePrice, originalPrice: activeOriginalPrice, image: activeImage, selectedOptions, quantity: 1 });
+    setConfirmedItem({ ...product, priceUSD: activePrice, originalPrice: activeOriginalPrice, image: activeImage, selectedOptions, quantity: qty });
 
     const number = storeConfig.whatsappNumber.replace(/[^0-9+]/g, "");
     const priceStr = activePrice.toFixed(2);
@@ -113,7 +114,7 @@ export default function QuickBuyModal({ product, onClose, onOrderComplete, store
       ``,
       `──────────────────────────`,
       `*Products:*`,
-      `• *1x* ${product.name}${optStr}`,
+      `• *${qty}x* ${product.name}${optStr}`,
       `  $${activePrice.toFixed(2)} → *$${priceStr}*`,
       ``,
       `──────────────────────────`,
@@ -172,7 +173,7 @@ export default function QuickBuyModal({ product, onClose, onOrderComplete, store
                             {Object.entries(confirmedItem.selectedOptions).map(([k, v]) => `${k}: ${v}`).join(" | ")}
                           </span>
                         )}
-                        <span className="quickbuy-product-price">${confirmedItem.priceUSD.toFixed(2)}</span>
+                        <span className="quickbuy-product-price">${confirmedItem.priceUSD.toFixed(2)} <span className="quickbuy-qty-x">× {confirmedItem.quantity}</span></span>
                       </div>
                       <span style={{ fontWeight: 600, whiteSpace: "nowrap", color: "var(--text-primary)" }}>${(confirmedItem.priceUSD * confirmedItem.quantity).toFixed(2)}</span>
                     </div>
@@ -198,6 +199,19 @@ export default function QuickBuyModal({ product, onClose, onOrderComplete, store
                   <span className="quickbuy-product-category">{category}</span>
                   <strong className="quickbuy-product-name">{name}</strong>
                   <span className="quickbuy-product-price">${activePrice.toFixed(2)}</span>
+                  <div className="quickbuy-inline-qty">
+                    <button onClick={() => { const v = Math.max(1, qty - 1); setQty(v); if (onQtyChange) onQtyChange(v); }} aria-label="Decrease" disabled={qty <= 1}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                      </svg>
+                    </button>
+                    <span>{qty}</span>
+                    <button onClick={() => { const v = Math.min(99, qty + 1); setQty(v); if (onQtyChange) onQtyChange(v); }} aria-label="Increase" disabled={qty >= 99}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
+                        <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -454,6 +468,53 @@ export default function QuickBuyModal({ product, onClose, onOrderComplete, store
           color: var(--accent-green);
         }
 
+        .quickbuy-inline-qty {
+          display: flex;
+          align-items: center;
+          margin-top: 0.4rem;
+          width: fit-content;
+          border: 1px solid var(--border-color);
+          border-radius: 20px;
+          overflow: hidden;
+          background: var(--bg-secondary);
+        }
+
+        .quickbuy-inline-qty button {
+          background: transparent;
+          border: none;
+          width: 28px;
+          height: 28px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          color: var(--text-primary);
+          transition: background 0.15s;
+        }
+
+        .quickbuy-inline-qty button:hover:not(:disabled) {
+          background: var(--border-color);
+        }
+
+        .quickbuy-inline-qty button:disabled {
+          opacity: 0.25;
+          cursor: default;
+        }
+
+        .quickbuy-inline-qty span {
+          padding: 0 0.5rem;
+          font-size: 0.85rem;
+          font-weight: 600;
+          min-width: 20px;
+          text-align: center;
+        }
+
+        .quickbuy-qty-x {
+          font-size: 0.75rem;
+          font-weight: 500;
+          color: var(--text-secondary);
+        }
+
         .quickbuy-body {
           padding: 0.5rem 1.5rem 1rem;
         }
@@ -623,21 +684,27 @@ export default function QuickBuyModal({ product, onClose, onOrderComplete, store
 
         .qchip {
           padding: 0.4rem 0.75rem;
-          border-radius: 15px;
-          border: 1px solid var(--border-color);
+          border-radius: 18px;
+          border: 1.5px solid var(--border-color);
           background: var(--bg-secondary);
+          color: var(--text-primary);
           font-size: 0.78rem;
-          font-weight: 500;
+          font-weight: 600;
           cursor: pointer;
-          transition: all 0.2s;
+          transition: all 0.15s;
         }
 
         .qchip input { display: none; }
 
+        .qchip:hover {
+          border-color: var(--text-secondary);
+          background: var(--border-color);
+        }
+
         .qchip.active {
-          background: var(--text-primary);
-          color: var(--accent-light);
-          border-color: var(--text-primary);
+          background: var(--text-primary) !important;
+          color: var(--bg-primary) !important;
+          border-color: var(--text-primary) !important;
         }
 
         @keyframes slide-up {

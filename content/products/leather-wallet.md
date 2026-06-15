@@ -2,6 +2,7 @@
 id: "leather-wallet"
 name: "Minimalist Leather Wallet"
 priceUSD: 24.00
+stock: 40
 category: "Accessories"
 images:
   - "leather_wallet_tan.png"

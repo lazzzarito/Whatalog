@@ -7,6 +7,7 @@ name: "Floral Rose Perfume"
 priceUSD: 18.00
 # Higher original price (shows strikethrough + OFFER badge)
 originalPrice: 25.00
+stock: 5
 # Category (auto-creates filter pill)
 category: "Perfumery"
 # Multiple images gallery (first is card thumbnail)

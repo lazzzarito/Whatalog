@@ -2,6 +2,7 @@
 id: "running-shoes"
 name: "Ultra Light Running Shoes"
 priceUSD: 79.00
+stock: 25
 category: "Footwear"
 images:
   - "running_shoes_slate_gray.png"

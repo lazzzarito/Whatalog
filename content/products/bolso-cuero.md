@@ -2,6 +2,7 @@
 id: "bolso-cuero"
 name: "Vintage Leather Handbag"
 priceUSD: 35.00
+stock: 12
 category: "Accessories"
 # Single image (alternative to `images` array)
 image: "bolso_cuero.webp"

@@ -3,6 +3,7 @@ id: "wireless-headphones"
 name: "Noise-Canceling Wireless Headphones"
 priceUSD: 129.00
 originalPrice: 159.00
+stock: 12
 category: "Electronics"
 images:
   - "headphones_matte_black.png"

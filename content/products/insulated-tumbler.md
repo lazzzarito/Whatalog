@@ -2,6 +2,8 @@
 id: "insulated-tumbler"
 name: "Stainless Steel Insulated Tumbler"
 priceUSD: 15.00
+originalPrice: 22.00
+stock: 14
 category: "Home & Kitchen"
 images:
   - "insulated_tumbler_sage_green.png"

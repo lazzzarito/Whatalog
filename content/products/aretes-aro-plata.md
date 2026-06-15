@@ -2,6 +2,7 @@
 id: "aretes-aro-plata"
 name: "Silver Hoop Earrings"
 priceUSD: 18.00
+stock: 25
 category: "Jewelry"
 image: "https://images.unsplash.com/photo-1635767798638-3e25273a8236?q=80&w=600&auto=format&fit=crop"
 description: "Classic sterling silver hoop earrings with a polished finish. Hypoallergenic and lightweight for everyday elegance."

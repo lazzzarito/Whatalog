@@ -2,6 +2,7 @@
 id: "chaleco-mezclilla"
 name: "Slim Fit Denim Jacket"
 priceUSD: 65.00
+stock: 15
 category: "Clothing"
 image: "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?q=80&w=600&auto=format&fit=crop"
 description: "Classic blue denim jacket with a modern slim fit. Features button closure, chest pockets, and adjustable waist tabs."

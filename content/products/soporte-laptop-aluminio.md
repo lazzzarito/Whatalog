@@ -2,6 +2,7 @@
 id: "soporte-laptop-aluminio"
 name: "Aluminum Laptop Stand"
 priceUSD: 14.99
+stock: 50
 category: "Electronics"
 image: "https://images.unsplash.com/photo-1611078489935-0cb964de46d6?q=80&w=600&auto=format&fit=crop"
 description: "Adjustable aluminum laptop stand with open vent design. Ergonomic 15° tilt improves posture and airflow for your device."

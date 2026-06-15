@@ -2,6 +2,7 @@
 id: "bolso-mensajero"
 name: "Leather Messenger Bag"
 priceUSD: 55.00
+stock: 10
 category: "Accessories"
 image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?q=80&w=600&auto=format&fit=crop"
 description: "Full-grain leather messenger bag with padded laptop compartment. Adjustable shoulder strap and multiple interior pockets."

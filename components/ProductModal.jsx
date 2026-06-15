@@ -5,10 +5,12 @@ import SafeImage from "@/components/SafeImage";
 import { lockBodyScroll } from "@/lib/scroll-lock";
 import { useHistoryPopup } from "@/lib/use-history-popup";
 
-export default function ProductModal({ product, onClose, onAddToCart, storeConfig, onQuickBuy }) {
+export default function ProductModal({ product, onClose, onAddToCart, storeConfig, onQuickBuy, productQty = 1, onQtyChange }) {
   // ── Track active image index for gallery ──
   const [activeImage, setActiveImage] = useState(0);
   const [addingToCart, setAddingToCart] = useState(false);
+  const [showPlusBadge, setShowPlusBadge] = useState(false);
+  const [lastAddedQty, setLastAddedQty] = useState(0);
   const [selectedOptions, setSelectedOptions] = useState({});
 
   useEffect(() => {
@@ -32,6 +34,13 @@ export default function ProductModal({ product, onClose, onAddToCart, storeConfi
   if (!product) return null;
 
   const { name, priceUSD, originalPrice, category, images, description, contentHtml, attributes, options } = product;
+  const stock = product.stock;
+  const productStatus = product.status;
+  const isComingSoon = productStatus === "coming-soon";
+  const isOutOfStock = !isComingSoon && stock === 0;
+  const isLowStock = !isComingSoon && !isOutOfStock && stock > 0 && stock < 10;
+  const maxQty = isComingSoon || isOutOfStock ? 0 : (isFinite(stock) ? stock : 99);
+  const canInteract = !isComingSoon && !isOutOfStock;
 
   // Build image list dynamically, including any option-specific images that aren't already present
   let baseImages = images && images.length > 0 ? [...images] : [product.image];
@@ -95,7 +104,7 @@ export default function ProductModal({ product, onClose, onAddToCart, storeConfi
   };
 
   const handleDirectBuy = () => {
-    onQuickBuy({ ...product, selectedOptions });
+    onQuickBuy({ ...product, selectedOptions, quantity: productQty });
   };
 
   return (
@@ -147,9 +156,19 @@ export default function ProductModal({ product, onClose, onAddToCart, storeConfi
                 <h2 className="product-modal-title">{name}</h2>
 
                 <div className="product-modal-prices">
-                  {hasDiscount && <span className="price-original">${activeOriginalPrice.toFixed(2)}</span>}
-                  <span className="price-primary">${activePrice.toFixed(2)}</span>
-                  {hasDiscount && <span className="product-modal-badge">OFFER</span>}
+                  {hasDiscount && (
+                    <div className="price-original-row">
+                      <span className="product-modal-badge">OFFER</span>
+                      <span className="price-original">${activeOriginalPrice.toFixed(2)}</span>
+                    </div>
+                  )}
+                  <div className="price-current-row">
+                    <span className="price-primary">${(activePrice * productQty).toFixed(2)}</span>
+                    {productQty > 1 && <span className="price-mult">${activePrice.toFixed(2)} × {productQty}</span>}
+                  </div>
+                  {isComingSoon && <div className="product-status-badge coming-soon">Coming Soon</div>}
+                  {isOutOfStock && <div className="product-status-badge out-of-stock">Out of Stock</div>}
+                  {isLowStock && <div className="product-status-badge low-stock">Only {stock} left in stock</div>}
                 </div>
 
                 {options && Object.keys(options).length > 0 && (
@@ -202,44 +221,74 @@ export default function ProductModal({ product, onClose, onAddToCart, storeConfi
 
           <div className="product-modal-footer">
             <div className="product-modal-footer-row">
-              <button className="btn-share" onClick={handleShare} title="Share">
+              <button className="btn-share" onClick={handleShare} title="Share" aria-label="Share">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
                   <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
                 </svg>
               </button>
-              <button className="btn-direct-buy" onClick={handleDirectBuy}>
+              <div className={`btn-add-cart-wrap${addingToCart ? ' added' : ''}`}>
+                <div className="btn-add-cart-stepper">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onQtyChange(Math.max(1, productQty - 1)); }}
+                    aria-label="Decrease quantity"
+                    disabled={productQty <= 1 || !canInteract}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
+                      <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                  </button>
+                  <span>{productQty}</span>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onQtyChange(Math.min(maxQty, productQty + 1)); }}
+                    aria-label="Increase quantity"
+                    disabled={productQty >= maxQty || !canInteract}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
+                      <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                  </button>
+                </div>
+                <button
+                  className="btn-add-cart"
+                  onClick={() => {
+                    const qty = productQty;
+                    onAddToCart(product, selectedOptions, qty);
+                    setLastAddedQty(qty);
+                    setAddingToCart(true);
+                    setShowPlusBadge(true);
+                    setTimeout(() => setAddingToCart(false), 2000);
+                    setTimeout(() => setShowPlusBadge(false), 900);
+                  }}
+                  aria-label="Add to cart"
+                  disabled={!canInteract}
+                >
+                  {addingToCart ? (
+                    <>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                      Added
+                    </>
+                  ) : (
+                    <>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                      </svg>
+                      Add to Cart
+                    </>
+                  )}
+                  {showPlusBadge && <span className="cart-plus-badge">+{lastAddedQty}</span>}
+                </button>
+              </div>
+              <button className="btn-direct-buy" onClick={handleDirectBuy} aria-label="Buy now" disabled={!canInteract}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
                   <line x1="3" y1="6" x2="21" y2="6" />
                   <path d="M16 10a4 4 0 0 1-8 0" />
                 </svg>
-                Buy
-              </button>
-              <button
-                className={`btn-add-cart${addingToCart ? ' added' : ''}`}
-                onClick={() => {
-                  onAddToCart(product, selectedOptions);
-                  setAddingToCart(true);
-                  setTimeout(() => setAddingToCart(false), 2000);
-                }}
-              >
-                {addingToCart ? (
-                  <>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                    Added
-                  </>
-                ) : (
-                  <>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
-                      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-                    </svg>
-                    Add to Cart
-                  </>
-                )}
+                Buy Now
               </button>
             </div>
           </div>
@@ -403,15 +452,27 @@ export default function ProductModal({ product, onClose, onAddToCart, storeConfi
         .product-modal-prices {
           display: flex;
           flex-direction: column;
+          gap: 0.15rem;
           border-bottom: 1px solid var(--border-color);
           padding-bottom: 1rem;
           margin-bottom: 1rem;
         }
 
+        .price-original-row {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+
+        .price-current-row {
+          display: flex;
+          align-items: baseline;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 0.25rem 0.5rem;
+        }
+
         .product-modal-badge {
-          display: inline-block;
-          align-self: flex-start;
-          margin-top: 0.35rem;
           background: #e74c3c;
           color: #fff;
           font-size: 0.6rem;
@@ -419,6 +480,45 @@ export default function ProductModal({ product, onClose, onAddToCart, storeConfi
           letter-spacing: 0.04em;
           padding: 0.2rem 0.55rem;
           border-radius: 6px;
+        }
+
+        .product-modal-prices .price-mult {
+          font-size: 0.72rem;
+          font-weight: 500;
+          color: var(--text-secondary);
+          margin-left: auto;
+        }
+
+        .product-status-badge {
+          font-size: 0.72rem;
+          font-weight: 600;
+          padding: 0.2rem 0.6rem;
+          border-radius: 6px;
+          display: inline-block;
+          margin-top: 0.15rem;
+        }
+
+        .product-status-badge.coming-soon {
+          background: #f59e0b;
+          color: #fff;
+        }
+
+        .product-status-badge.out-of-stock {
+          background: #ef4444;
+          color: #fff;
+        }
+
+        .product-status-badge.low-stock {
+          background: transparent;
+          color: var(--text-secondary);
+          padding: 0.2rem 0;
+        }
+
+        .btn-add-cart:disabled,
+        .btn-direct-buy:disabled {
+          opacity: 0.4;
+          cursor: default;
+          pointer-events: none;
         }
 
         .product-modal-options {
@@ -544,63 +644,174 @@ export default function ProductModal({ product, onClose, onAddToCart, storeConfi
         .product-modal-footer-row {
           display: flex;
           gap: 0.5rem;
-        }
-
-        .product-modal-footer-row button {
-          flex: 1;
-          padding: 0.65rem 0.75rem;
-          border-radius: 30px;
-          font-size: 0.75rem;
-          font-weight: 600;
-          display: flex;
           align-items: center;
-          justify-content: center;
-          gap: 0.35rem;
-          cursor: pointer;
-          transition: all 0.2s;
-          border: 1.5px solid var(--border-color);
-          background: var(--bg-secondary);
-          color: var(--text-primary);
-          white-space: nowrap;
         }
 
         .product-modal-footer-row .btn-share {
           flex: 0 0 auto;
-          width: 2.5rem;
-          height: 2.5rem;
+          width: 2.75rem;
+          height: 2.75rem;
           padding: 0;
           border-radius: 50%;
+          border: 1.5px solid var(--border-color);
+          background: var(--bg-secondary);
+          color: var(--text-primary);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .product-modal-footer-row .btn-share:hover {
+          background: var(--border-color);
+        }
+
+        .btn-add-cart-wrap {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          border-radius: 30px;
+          border: 1.5px solid var(--border-color);
+          background: var(--bg-secondary);
+          transition: all 0.2s;
+          min-width: 0;
+        }
+
+        .btn-add-cart-wrap.added {
+          background: var(--accent-green);
+          border-color: var(--accent-green);
+        }
+
+        .btn-add-cart-wrap.added .btn-add-cart-stepper {
+          pointer-events: none;
+        }
+
+        .btn-add-cart-wrap.added .btn-add-cart-stepper button,
+        .btn-add-cart-wrap.added .btn-add-cart-stepper span {
+          color: #fff;
+        }
+
+        .btn-add-cart-stepper {
+          display: flex;
+          align-items: center;
+          padding: 0 0.1rem;
+          flex-shrink: 0;
+          border-right: 1px solid var(--border-color);
+          transition: all 0.2s;
+        }
+
+        .btn-add-cart-wrap.added .btn-add-cart-stepper {
+          border-right-color: rgba(255,255,255,0.3);
+        }
+
+        .btn-add-cart-stepper button {
+          background: transparent;
+          border: none;
+          width: 28px;
+          height: 28px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          color: var(--text-primary);
+          transition: background 0.15s;
+        }
+
+        .btn-add-cart-stepper button:hover:not(:disabled) {
+          background: var(--border-color);
+        }
+
+        .btn-add-cart-stepper button:disabled {
+          opacity: 0.25;
+          cursor: default;
+        }
+
+        .btn-add-cart-stepper span {
+          padding: 0 0.4rem;
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: var(--text-primary);
+        }
+
+        .btn-add-cart-wrap .btn-add-cart {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.25rem;
+          padding: 0.65rem 0.4rem;
+          background: transparent;
+          border: none;
+          color: var(--text-primary);
+          font-size: 0.8rem;
+          font-weight: 600;
+          cursor: pointer;
+          white-space: nowrap;
+          transition: all 0.2s;
+          position: relative;
+        }
+
+        .btn-add-cart-wrap.added .btn-add-cart {
+          color: #fff;
+          font-weight: 700;
+          pointer-events: none;
+        }
+
+        .btn-add-cart-wrap .btn-add-cart svg {
+          flex-shrink: 0;
+        }
+
+        .btn-add-cart-wrap .btn-add-cart .cart-plus-badge {
+          position: absolute;
+          top: -10px;
+          right: -8px;
+          background: #ff3b30;
+          color: #fff;
+          font-size: 0.6rem;
+          font-weight: 700;
+          min-width: 22px;
+          height: 22px;
+          padding: 0 6px;
+          border-radius: 11px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          pointer-events: none;
+          box-shadow: 0 2px 8px rgba(255,59,48,0.45);
+          z-index: 10;
+          animation: badge-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.5);
         }
 
         .product-modal-footer-row .btn-direct-buy {
           flex: 0 0 auto;
-          padding: 0.65rem 0.9rem;
+          padding: 0.65rem 1.1rem;
+          border-radius: 30px;
+          font-size: 0.8rem;
+          font-weight: 600;
+          background: var(--accent-green);
+          color: #fff;
+          border: none;
+          cursor: pointer;
+          transition: all 0.2s;
+          white-space: nowrap;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.4rem;
         }
 
-        .product-modal-footer-row button:hover {
-          background: var(--border-color);
+        .product-modal-footer-row .btn-direct-buy svg {
+          display: block;
         }
 
-        .product-modal-footer-row .btn-add-cart {
-          background: var(--text-primary) !important;
-          color: var(--accent-light) !important;
-          border-color: var(--text-primary) !important;
+        .product-modal-footer-row .btn-direct-buy:hover {
+          background: var(--accent-hover);
         }
 
-        .product-modal-footer-row .btn-add-cart:hover {
-          opacity: 0.9;
-        }
-
-        .product-modal-footer-row .btn-add-cart.added {
-          background: var(--accent-green) !important;
-          color: #fff !important;
-          border-color: var(--accent-green) !important;
-          pointer-events: none;
-        }
-
-        .product-modal-footer-row .btn-direct-buy svg,
-        .product-modal-footer-row .btn-share svg {
-          flex-shrink: 0;
+        .product-modal-footer-row .btn-direct-buy:active {
+          transform: scale(0.97);
         }
       `}</style>
     </>
