@@ -36,6 +36,36 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
   const offersRef = useRef(null);
   const persistTimerRef = useRef(null);
   const [productQtyMap, setProductQtyMap] = useState({});
+  const [soldMap, setSoldMap] = useState(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const raw = localStorage.getItem("whatalog_sold");
+        return raw ? JSON.parse(raw) : {};
+      } catch (e) {}
+    }
+    return {};
+  });
+
+  const persistSold = (map) => {
+    try { localStorage.setItem("whatalog_sold", JSON.stringify(map)); } catch (e) {}
+  };
+
+  const recordSale = useCallback((productId, qty) => {
+    setSoldMap((prev) => {
+      const next = { ...prev };
+      next[productId] = (next[productId] || 0) + qty;
+      persistSold(next);
+      return next;
+    });
+  }, []);
+
+  const toEffectiveProduct = useCallback((product) => {
+    if (!product) return product;
+    const sold = soldMap[product.id] || 0;
+    const baseStock = product.stock === undefined || product.stock === null ? Infinity : product.stock;
+    const effectiveStock = Math.max(0, baseStock - sold);
+    return { ...product, stock: effectiveStock };
+  }, [soldMap]);
 
   useEffect(() => {
     startTransition(() => {
@@ -298,6 +328,23 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
   const [selectedPromo, setSelectedPromo] = useState(null);
   const [quickBuyProduct, setQuickBuyProduct] = useState(null);
   const [showOffers, setShowOffers] = useState(false);
+  const footerRef = useRef(null);
+  const [isFooterVisible, setIsFooterVisible] = useState(false);
+
+  useEffect(() => {
+    const el = footerRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsFooterVisible(entry.isIntersecting),
+      { threshold: 0.1 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const productQty = selectedProduct ? (productQtyMap[selectedProduct.id] ?? 1) : 1;
 
@@ -409,7 +456,7 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
               {offerProducts.slice(0, 8).map((product) => (
                 <ProductCard
                   key={product.id}
-                  product={product}
+                  product={toEffectiveProduct(product)}
                   onAddToCart={handleAddToCart}
                   onOpenDetails={setSelectedProduct}
                   priority
@@ -440,7 +487,7 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
               {visibleProducts.map((product, i) => (
                 <ProductCard
                   key={product.id}
-                  product={product}
+                  product={toEffectiveProduct(product)}
                   onAddToCart={handleAddToCart}
                   onOpenDetails={setSelectedProduct}
                   priority={i < 4}
@@ -494,11 +541,16 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
           onRemoveItem={handleRemoveItem}
           onClearCart={clearCart}
           storeConfig={storeConfig}
+          onOrderComplete={() => {
+            cartItems.forEach((item) => recordSale(item.productId || item.id, item.quantity));
+          }}
+          isFooterVisible={isFooterVisible}
+          scrollToTop={scrollToTop}
         />
       )}
 
       <ProductModal
-        product={selectedProduct}
+        product={toEffectiveProduct(selectedProduct)}
         onClose={() => setSelectedProduct(null)}
         onAddToCart={handleAddToCart}
         storeConfig={storeConfig}
@@ -511,7 +563,13 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
         <QuickBuyModal
           product={quickBuyProduct}
           onClose={() => setQuickBuyProduct(null)}
-          onOrderComplete={() => { if (quickBuyProduct?.id) clearProductQty(quickBuyProduct.id); setSelectedProduct(null); }}
+          onOrderComplete={() => {
+            if (quickBuyProduct?.id) {
+              recordSale(quickBuyProduct.id, quickBuyProduct.quantity || 1);
+              clearProductQty(quickBuyProduct.id);
+            }
+            setSelectedProduct(null);
+          }}
           storeConfig={storeConfig}
           onQtyChange={handleQtyChange}
         />
@@ -628,9 +686,9 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
           color: var(--text-secondary);
-          width: 28px;
-          height: 28px;
-          border-radius: 8px;
+          width: 26px;
+          height: 26px;
+          border-radius: 50%;
           cursor: pointer;
           display: flex;
           align-items: center;
@@ -640,8 +698,10 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
         }
 
         .btn-filter-catalog:hover {
-          background: var(--border-color);
-          color: var(--text-primary);
+          background: var(--accent-green);
+          color: #fff;
+          border-color: var(--accent-green);
+          transform: scale(1.08);
         }
 
         .featured-title-line {
@@ -696,10 +756,68 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
       `}</style>
 
       {/* ── Footer with map & social links ── */}
-      <footer className="app-footer-minimal">
+      <footer className="app-footer-minimal" ref={footerRef}>
+        <div className="footer-store-card">
+          <div className="footer-store-header">
+            <div className="footer-store-header-left">
+              <h3 className="footer-store-name">{storeConfig.name}</h3>
+              <span className="store-info-badge">Online Catalog</span>
+            </div>
+            {storeConfig.logoUrl && (
+              <div className="footer-store-logo">
+                <Image src={storeConfig.logoUrl} alt={storeConfig.name} width={48} height={48} style={{ borderRadius: "50%", objectFit: "cover" }} />
+              </div>
+            )}
+          </div>
+          <div className="footer-store-grid">
+            <div className="store-info-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" />
+              </svg>
+              <div>
+                <strong>Location</strong>
+                <p>{storeConfig.location}</p>
+              </div>
+            </div>
+            <div className="store-info-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+              </svg>
+              <div>
+                <strong>WhatsApp</strong>
+                <p>{storeConfig.whatsappNumber}</p>
+              </div>
+            </div>
+            <div className="store-info-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+              </svg>
+              <div>
+                <strong>Hours</strong>
+                <p>Monday - Saturday, 9:00 AM – 6:00 PM</p>
+              </div>
+            </div>
+            <div className="store-info-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="1" y="3" width="15" height="13" /><polygon points="16 8 20 8 23 11 23 16 16 16 16 8" /><circle cx="5.5" cy="18.5" r="2.5" /><circle cx="18.5" cy="18.5" r="2.5" />
+              </svg>
+              <div>
+                <strong>Deliveries</strong>
+                <p>Coordinated shipping in Miami area</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="footer-map-card">
-          <div className="footer-map-header">
-            <h3 className="footer-map-title">Location</h3>
+            <div className="footer-map-header">
+            <h3 className="footer-map-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "0.3rem" }}>
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
+              Where to find us?
+            </h3>
             <div className="footer-map-actions">
               <a
                 href={storeConfig.trustpilotUrl || "https://www.trustpilot.com"}
@@ -763,6 +881,12 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
             </a>
           </div>
 
+          <div className="app-footer-copyright">
+            &copy; {new Date().getFullYear()} Whatalog. All rights reserved.
+            <span className="footer-credits-text"> Made with <span style={{ color: "#e74c3c" }}>❤️‍🔥</span> by{" "}
+            <a href="https://1azarito.vercel.app" target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent-green)", fontWeight: 600, textDecoration: "none" }}>1azarito</a></span>
+          </div>
+
           <div className="footer-info-buttons">
             <button className="footer-info-btn" onClick={() => window.dispatchEvent(new CustomEvent("open-store-info"))}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -781,15 +905,6 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
               Template Info
             </button>
           </div>
-
-          <div className="app-footer-copyright">
-            &copy; {new Date().getFullYear()} Whatalog. All rights reserved.
-          </div>
-
-          <p className="footer-made-by">
-            Made with <span style={{ color: "#e74c3c" }}>❤️‍🔥</span> by{" "}
-            <a href="https://1azarito.vercel.app" target="_blank" rel="noopener noreferrer">1azarito</a>
-          </p>
         </div>
       </footer>
     </>

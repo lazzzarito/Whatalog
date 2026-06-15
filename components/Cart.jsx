@@ -17,7 +17,7 @@ const defaultCustomer = () => {
   return { name: "", phone: "", delivery: "pickup", address: "", payment: "", paymentOther: "" };
 };
 
-export default function Cart({ cartItems, onUpdateQty, onRemoveItem, onClearCart, storeConfig }) {
+export default function Cart({ cartItems, onUpdateQty, onRemoveItem, onClearCart, storeConfig, onOrderComplete, isFooterVisible, scrollToTop }) {
   const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState(1);
   const [customer, setCustomer] = useState(defaultCustomer);
@@ -98,6 +98,7 @@ export default function Cart({ cartItems, onUpdateQty, onRemoveItem, onClearCart
     localStorage.setItem(CUSTOMER_KEY, JSON.stringify(customer));
     setConfirmedItems(cartItems.map((item) => ({ ...item })));
     setConfirmed(true);
+    if (onOrderComplete) onOrderComplete();
     setTimeout(() => onClearCart(), 300);
   };
 
@@ -110,12 +111,23 @@ export default function Cart({ cartItems, onUpdateQty, onRemoveItem, onClearCart
 
   return (
     <>
-      <button className="floating-cart-btn" onClick={() => setIsOpen(true)}>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
-          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-        </svg>
-        <span>My Cart</span>
+      <button
+        className={`floating-cart-btn${isFooterVisible ? " scroll-top" : ""}`}
+        onClick={isFooterVisible ? scrollToTop : () => setIsOpen(true)}
+      >
+        <span className="cart-btn-icon">
+          {isFooterVisible ? (
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="18 15 12 9 6 15" />
+            </svg>
+          ) : (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+            </svg>
+          )}
+        </span>
+        <span className="cart-btn-text">My Cart</span>
         {totalItems > 0 && <span className="cart-count-badge">{totalItems}</span>}
       </button>
 

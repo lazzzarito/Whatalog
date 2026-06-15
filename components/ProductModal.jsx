@@ -496,6 +496,7 @@ export default function ProductModal({ product, onClose, onAddToCart, storeConfi
           border-radius: 6px;
           display: inline-block;
           margin-top: 0.15rem;
+          align-self: flex-start;
         }
 
         .product-status-badge.coming-soon {
@@ -678,6 +679,10 @@ export default function ProductModal({ product, onClose, onAddToCart, storeConfi
           min-width: 0;
         }
 
+        .btn-add-cart-wrap:hover {
+          background: var(--border-color);
+        }
+
         .btn-add-cart-wrap.added {
           background: var(--accent-green);
           border-color: var(--accent-green);
@@ -690,6 +695,10 @@ export default function ProductModal({ product, onClose, onAddToCart, storeConfi
         .btn-add-cart-wrap.added .btn-add-cart-stepper button,
         .btn-add-cart-wrap.added .btn-add-cart-stepper span {
           color: #fff;
+        }
+
+        .btn-add-cart-wrap.added:hover {
+          background: var(--accent-green);
         }
 
         .btn-add-cart-stepper {

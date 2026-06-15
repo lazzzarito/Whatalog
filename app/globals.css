@@ -881,12 +881,56 @@ body {
   font-weight: 600;
   cursor: pointer;
   box-shadow: var(--shadow-sm);
-  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s;
+  max-width: 300px;
+  overflow: hidden;
+  transition: max-width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              padding 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              gap 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              border-radius 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .floating-cart-btn:hover {
   transform: translateY(-3px) scale(1.02);
   background: #007a63;
+}
+
+.floating-cart-btn.scroll-top {
+  max-width: 56px;
+  padding: 0;
+  gap: 0;
+  border-radius: 50%;
+  height: 56px;
+  justify-content: center;
+}
+
+.floating-cart-btn .cart-btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.floating-cart-btn .cart-btn-text {
+  white-space: nowrap;
+  overflow: hidden;
+  transition: opacity 0.3s ease, max-width 0.3s ease;
+  max-width: 120px;
+  opacity: 1;
+}
+
+.floating-cart-btn.scroll-top .cart-btn-text {
+  opacity: 0;
+  max-width: 0;
+  margin: 0;
+}
+
+.floating-cart-btn .cart-count-badge {
+  transition: opacity 0.3s ease;
+}
+
+.floating-cart-btn.scroll-top .cart-count-badge {
+  opacity: 0;
 }
 
 .cart-count-badge {
@@ -1274,6 +1318,86 @@ body {
   gap: 1.5rem;
 }
 
+.footer-store-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.footer-store-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.footer-store-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.footer-store-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.footer-store-logo {
+  flex-shrink: 0;
+}
+
+.footer-store-logo img {
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.footer-store-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 767px) {
+  .footer-store-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.footer-store-grid .store-info-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  color: var(--text-primary);
+  font-size: 0.82rem;
+}
+
+.footer-store-grid .store-info-item svg {
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+  color: var(--accent-green);
+}
+
+.footer-store-grid .store-info-item strong {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  margin-bottom: 0.1rem;
+}
+
+.footer-store-grid .store-info-item p {
+  margin: 0;
+  color: var(--text-primary);
+}
+
 .footer-map-card {
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
@@ -1344,13 +1468,17 @@ body {
   width: 100%;
   height: 100%;
   border: 0;
+  filter: hue-rotate(80deg) saturate(0.8);
+  transition: filter 0.3s;
 }
 
 .footer-bottom-row {
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  flex-direction: row;
+  justify-content: space-between;
   align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .app-footer-copyright {
@@ -1398,6 +1526,49 @@ body {
   color: var(--accent-green);
   transform: translateY(-3px) scale(1.05);
 }
+
+.footer-credits-text {
+  display: inline;
+}
+
+@media (max-width: 767px) {
+  .footer-credits-text {
+    display: block;
+    margin-top: 0.25rem;
+  }
+}
+
+/* ── Footer mobile ── */
+@media (max-width: 767px) {
+  .footer-bottom-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .social-links { order: 1; }
+  .footer-info-buttons { order: 2; justify-content: flex-start; margin-bottom: 0; }
+  .app-footer-copyright { order: 3; }
+
+  .footer-map-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .footer-map-title {
+    margin-bottom: 0.5rem;
+  }
+
+  .footer-map-actions {
+    justify-content: space-between;
+  }
+
+  .footer-store-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+
 
 /* ===== Store Info Modal ===== */
 .store-info-overlay {

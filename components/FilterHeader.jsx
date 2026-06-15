@@ -329,8 +329,13 @@ export default function FilterHeader({
 
             <div className="store-info-scroll">
               <div className="store-info-header">
-                <h2 className="store-info-title">{storeConfig.name}</h2>
-                <span className="store-info-badge">Online Catalog</span>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+                  <h2 className="store-info-title">{storeConfig.name}</h2>
+                  <span className="store-info-badge">Online Catalog</span>
+                </div>
+                {storeConfig.logoUrl && (
+                  <Image src={storeConfig.logoUrl} alt={storeConfig.name} width={44} height={44} style={{ borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+                )}
               </div>
 
               <div className="store-info-body">
