@@ -1,5 +1,5 @@
 ---
-id: "gorro-lana"
+id: "knitted-wool-beanie"
 name: "Knitted Wool Beanie"
 priceUSD: 22.00
 stock: 22

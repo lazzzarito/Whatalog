@@ -1,11 +1,11 @@
 ---
-id: "crema-hidratante"
+id: "organic-jasmine-moisturizer"
 name: "Organic Jasmine Moisturizer"
 priceUSD: 14.50
 originalPrice: 18.50
 stock: 11
 category: "Cosmetics"
-image: "crema_facial.webp"
+image: "organic-jasmine-moisturizer.webp"
 description: "Daily facial moisturizer with jasmine extract and argan oil. Suitable for all skin types, deeply nourishing, and restores radiance."
 featured: true
 offer: true

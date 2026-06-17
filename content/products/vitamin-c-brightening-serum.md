@@ -1,5 +1,5 @@
 ---
-id: "serum-vitamina-c"
+id: "vitamin-c-brightening-serum"
 name: "Vitamin C Brightening Serum"
 priceUSD: 19.99
 originalPrice: 26.00

@@ -1,5 +1,5 @@
 ---
-id: "set-tazas-ceramica"
+id: "ceramic-coffee-mug-set"
 name: "Ceramic Coffee Mug Set"
 priceUSD: 24.99
 stock: 30

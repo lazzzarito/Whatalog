@@ -1,5 +1,5 @@
 ---
-id: "chaleco-mezclilla"
+id: "slim-fit-denim-jacket"
 name: "Slim Fit Denim Jacket"
 priceUSD: 65.00
 stock: 15

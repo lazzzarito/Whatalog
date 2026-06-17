@@ -1,5 +1,5 @@
 ---
-id: "bandas-resistencia"
+id: "resistance-bands-set"
 name: "Resistance Bands Set"
 priceUSD: 19.99
 originalPrice: 25.99

@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect } from "react";
+import Image from "next/image";
 import { lockBodyScroll } from "@/lib/scroll-lock";
 import { useHistoryPopup } from "@/lib/use-history-popup";
+import storeConfig from "@/content/store-config.json";
 
 export default function ProInfoModal({ visible, onClose }) {
   useEffect(() => {
@@ -33,8 +35,13 @@ export default function ProInfoModal({ visible, onClose }) {
 
         <div className="store-info-scroll">
           <div className="store-info-header">
-            <h2 className="store-info-title">Whatalog Pro</h2>
-            <span className="store-info-badge">Coming Soon</span>
+            {storeConfig.logoUrl && (
+              <Image src={storeConfig.logoUrl} alt={storeConfig.name} width={36} height={36} style={{ borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+            )}
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+              <h2 className="store-info-title">Whatalog Pro</h2>
+              <span className="store-info-badge">Coming Soon</span>
+            </div>
           </div>
 
           <div className="store-info-body">

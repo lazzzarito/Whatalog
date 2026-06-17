@@ -1,5 +1,5 @@
 ---
-id: "gafas-sol"
+id: "retro-round-sunglasses"
 name: "Retro Round Sunglasses"
 priceUSD: 16.00
 stock: 30

@@ -1,5 +1,5 @@
 ---
-id: "auriculares-bluetooth"
+id: "wireless-bluetooth-headphones"
 name: "Wireless Bluetooth Headphones"
 priceUSD: 79.99
 stock: 18

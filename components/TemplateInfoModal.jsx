@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { lockBodyScroll } from "@/lib/scroll-lock";
 import { useHistoryPopup } from "@/lib/use-history-popup";
 import ProInfoModal from "@/components/ProInfoModal";
+import storeConfig from "@/content/store-config.json";
 
 const GITHUB_URL = "https://github.com/lazzzarito/Whatalog";
 
@@ -61,8 +63,13 @@ export default function TemplateInfoModal() {
 
         <div className="store-info-scroll">
           <div className="store-info-header">
-            <h2 className="store-info-title">Whatalog</h2>
-            <span className="store-info-badge">WhatsApp Catalog Template</span>
+            {storeConfig.logoUrl && (
+              <Image src={storeConfig.logoUrl} alt={storeConfig.name} width={36} height={36} style={{ borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+            )}
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+              <h2 className="store-info-title">Whatalog</h2>
+              <span className="store-info-badge">WhatsApp Catalog Template</span>
+            </div>
           </div>
 
           <div className="store-info-body">

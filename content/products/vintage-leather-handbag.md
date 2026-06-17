@@ -1,11 +1,11 @@
 ---
-id: "bolso-cuero"
+id: "vintage-leather-handbag"
 name: "Vintage Leather Handbag"
 priceUSD: 35.00
 stock: 12
 category: "Accessories"
 # Single image (alternative to `images` array)
-image: "bolso_cuero.webp"
+image: "vintage-leather-handbag.webp"
 description: "Elegant camel-color shoulder bag. Its structured design and gold hardware give it a sophisticated look perfect for everyday wear."
 featured: false
 promo: "accessories-edit"

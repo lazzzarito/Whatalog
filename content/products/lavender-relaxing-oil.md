@@ -1,5 +1,5 @@
 ---
-id: "aceite-lavanda"
+id: "lavender-relaxing-oil"
 name: "Lavender Relaxing Oil"
 priceUSD: 15.50
 stock: 7

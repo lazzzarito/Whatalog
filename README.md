@@ -40,7 +40,9 @@ Most small businesses don't need a full e‑commerce platform. They need a **cat
 | **Fully responsive**                | Mobile‑first design, looks flawless on phones, tablets, and desktops.                                         |
 | **Popup back-navigation stack**     | Each popup closes one at a time via browser back. Nested popups (Promo → Product → QuickBuy) stay layered.   |
 | **Double-back-to-exit**             | Shows an exit warning toast on first back press. Second press within 3 seconds leaves the site.              |
-| **Flash Offers section**            | Products with `offer: true` appear in a hero grid. A + button opens all offers in a popup.                   |
+| **Flash Offers section**            | Products with `offer: true` and a valid discount appear in a CSS multi-column masonry grid. A + button opens all offers in a MasonryGrid popup. |
+| **Inventory tracking**              | Per-product `stock` and `status` fields. Sold quantities persisted in `localStorage` for runtime stock deduction. |
+| **Scroll-to-top button**            | Floating cart button smoothly transforms into a circular up-arrow when the footer is visible.                |
 | **Promo groups**                    | Products with matching `promo` field are grouped into promo modals (2–4 products per group).                  |
 | **Toast notifications**             | Non-blocking feedback for cart actions (green) and exit warnings (orange).                                    |
 
@@ -57,7 +59,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) — your catalog is live.
 
-> 📖 **Full documentation available in [`guide.md`](guide.md)** — covers project structure, product format, configuration, customization, translation, and deployment.
+> 📖 **Full documentation available in [`GUIDE.md`](GUIDE.md)** — covers project structure, product format, configuration, customization, translation, and deployment.
 
 ---
 
@@ -66,7 +68,7 @@ Open [http://localhost:3000](http://localhost:3000) — your catalog is live.
 Everything is designed to be edited without touching code.
 
 - **Store info** — edit `content/store-config.json` (name, phone, currency, promo banners, promo links)
-- **Products** — add `.md` files to `content/products/` with frontmatter (title, price, category, image)
+- **Products** — add `.md` files to `content/products/` with frontmatter (title, price, category, image, stock, status, options)
 - **Images** — place product images in `content/products/` and promos in `content/promos/`, or use Unsplash URLs directly
 - **Colors & fonts** — adjust CSS variables in `app/globals.css`
 - **Manual translation** — to customize any UI string, edit the component files directly (all text is hardcoded in English)

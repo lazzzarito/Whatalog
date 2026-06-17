@@ -61,7 +61,7 @@ whatalog/
 ├── eslint.config.mjs                        → ESLint flat config
 ├── jsconfig.json                            → Path aliases (@/ → .)
 ├── README.md                                → Brief project overview
-└── guide.md                                 → This file
+└── GUIDE.md                                 → This file
 ```
 
 ---
@@ -104,11 +104,17 @@ images:                       # Multiple images (array of strings).
 # ── OPTIONAL ──────────────────────────────────────────────
 description: "Wild rose and..."   # Short text shown on the product card (clamped to 2 lines).
 originalPrice: 25.00              # Original/higher price. Shows strikethrough + OFFER badge.
+offer: true                       # Boolean. Shows product in "Flash Offers" section (only if originalPrice > priceUSD).
+stock: 25                         # Number. Available inventory. Defaults to Infinity if omitted.
+status: "coming-soon"             # String. "coming-soon" blocks all purchase actions; null/omitted means available.
 featured: true                    # Boolean. Featured products sort first.
-offer: true                       # Boolean. Shows product in "Flash Offers" hero section.
 attributes:                       # Key-value pairs displayed in modal & sent in WhatsApp.
   Size: "50 ml"
   Color: "Gold"
+options:                          # Array of product options (size, color, etc.) displayed as pills.
+  - "Small"
+  - "Medium"
+  - "Large"
 promo: "summer-fragrances"        # String. Groups product into a promo modal (matches promoLinks target).
 ---
 ```
@@ -144,7 +150,7 @@ This perfume is crafted with the finest floral notes. Its minimalist, elegant bo
 
 ```yaml
 ---
-id: "bolso-cuero"
+id: "vintage-leather-handbag"
 name: "Vintage Leather Handbag"
 priceUSD: 35.00
 category: "Accessories"
@@ -158,7 +164,7 @@ featured: false
 
 ```yaml
 ---
-id: "gafas-sol"
+id: "retro-round-sunglasses"
 name: "Retro Round Sunglasses"
 priceUSD: 16.00
 category: "Accessories"
@@ -383,18 +389,26 @@ The page is organized top-to-bottom as follows:
 ├──────────────────────────────────────────────┤
 │  FOOTER                                       │
 │  ┌──────────────────────────────────────┐     │
-│  │  Google Maps iframe                  │     │
+│  │  Store Card: logo + name + badge     │     │
+│  │  [social icons]                      │     │
+│  │  3-col grid: Location, WhatsApp,     │     │
+│  │  Hours, Deliveries, Store Info,      │     │
+│  │  Template Info (clickable)           │     │
 │  └──────────────────────────────────────┘     │
-│  [Social icons: GitHub, Instagram,             │
-│   Facebook, WhatsApp]                         │
-│  [Store Info] [Template Info]                  │
-│  © 2026 Whatalog. All rights reserved.         │
-│  Made with ❤️‍🔥 by 1azarito                     │
+│  ┌──────────────────────────────────────┐     │
+│  │  Map Card: "Where to find us?" +     │     │
+│  │  Google Maps iframe + Trustpilot     │     │
+│  └──────────────────────────────────────┘     │
+│  Bottom row: social | copyright | info buttons│
 └──────────────────────────────────────────────┘
 
   ┌─────────────────────┐
   │ 🛒 My Cart      [3] │ ← Floating cart button
   └─────────────────────┘    (fixed, bottom-right)
+                            ↓ scrolls to footer
+  ┌─────────────────────┐
+  │    ↑ Scroll to top  │ ← Transforms into circular
+  └─────────────────────┘    up-arrow button
 
   ┌─────────────────────┐
   │ Product Modal       │ ← Slides up on card tap
@@ -490,6 +504,8 @@ All colors are defined as CSS custom properties in `app/globals.css`. The design
 
 - The "OFFER" badge on product cards uses `--accent-green2` (`#25d366`) as background.
 - The "OFFER" badge inside the product modal uses a hardcoded `#e74c3c` (red) background.
+- The "Coming Soon" badge uses amber/ocher (`#b8860b`) background.
+- The "Out of Stock" badge uses red (`#c0392b`) background.
 - Share buttons use hardcoded dark colors (`#1a1a1a` background, `#333` border).
 - The floating cart button uses a hardcoded `#008a72` with `#007a63` hover.
 - The active category pill uses `--text-primary` as background and `--accent-light` as text color.
@@ -613,6 +629,8 @@ Below is every user-facing string in Whatalog, where it lives, and its default E
 | String | Context |
 |---|---|
 | `"OFFER"` | Discount badge |
+| `"Coming Soon"` | Status badge (amber) |
+| `"Out of Stock"` | Stock badge (red) |
 | `"Add to cart"` | "+" button `title` |
 
 ### Product Modal (`components/ProductModal.jsx`)
@@ -622,6 +640,8 @@ Below is every user-facing string in Whatalog, where it lives, and its default E
 | `"Previous image"` | Image nav button `aria-label` |
 | `"Next image"` | Image nav button `aria-label` |
 | `"OFFER"` | Discount badge |
+| `"Coming Soon"` | Status badge (amber) |
+| `"Out of Stock"` | Stock badge (red) |
 | `"Share"` | Share button `title` |
 | `"Buy"` | Direct buy button |
 | `"Add to Cart"` | CTA button |
@@ -657,6 +677,12 @@ Below is every user-facing string in Whatalog, where it lives, and its default E
 ---
 
 ## Cart and Checkout
+
+### Floating Cart Button & Scroll-to-Top
+
+The floating cart button (fixed bottom-right) has a dual role:
+- **Default state**: Shows cart icon + "My Cart" label + item count badge. Opens the cart drawer on tap.
+- **Scroll-to-top state**: When the footer enters the viewport (detected via `IntersectionObserver`), the button smoothly transforms into a circular up-arrow button. Text and badge fade out; `max-width` transitions from `300px` to `56px`. On tap, the page scrolls to top.
 
 ### How the Cart Works
 
@@ -860,12 +886,11 @@ const hasDiscount = originalPrice && originalPrice > priceUSD;
 offer: true
 ```
 
-When `offer: true`:
+When `offer: true` AND `originalPrice` is set and greater than `priceUSD`:
 - The product appears in the "Flash Offers" featured section at the top of the catalog (right below the promo grid).
-- Only the first 4 offer products are shown in the grid; all offers can be viewed by tapping the **+ button** (circular, green, at the end of the title row).
-- The "+ button" opens an `OfferModal` popup showing ALL offer products in a promo-style grid.
-- The offer section uses a 2-column (mobile) / 4-column (desktop) grid layout, NOT the masonry layout.
-- Products in this section always use `ratio-square` aspect ratio.
+- The first 24 offer products are shown in a CSS multi-column masonry grid (same as the main catalog, **not** a forced square grid).
+- A **+ button** (circular, green, at the end of the title row) opens an `OfferModal` popup showing ALL offer products in a `<MasonryGrid>` with natural aspect ratios.
+- Products without `originalPrice > priceUSD` are excluded even if `offer: true`.
 
 The title row layout:
 ```
@@ -876,8 +901,7 @@ The separator line is an explicit `<span className="featured-title-line">`, and 
 The filtering logic in `CatalogContainer.jsx`:
 ```js
 const offerProducts = useMemo(() => {
-  return initialProducts.filter((p) => p.offer)
-    .map((p) => ({ ...p, ratioClass: "ratio-square" }));
+  return initialProducts.filter((p) => p.offer && p.originalPrice && p.originalPrice > p.priceUSD);
 }, [initialProducts]);
 ```
 
@@ -904,6 +928,39 @@ This shows the product with a strikethrough original price AND places it in the 
 
 ---
 
+## Stock & Inventory
+
+Each product can optionally define `stock` and `status` in its frontmatter:
+
+```yaml
+stock: 25                    # Available units. Defaults to Infinity if omitted.
+status: "coming-soon"        # "coming-soon" blocks all purchase actions.
+```
+
+### How Stock Works
+
+1. **Effective stock** is computed at runtime: `effectiveStock = frontmatterStock - soldCount`, where `soldCount` is read from `localStorage` (key `whatalog_sold`).
+2. When an order is completed (via QuickBuy or Cart checkout), `recordSale(productId, qty)` is called to persist sold quantities.
+3. `toEffectiveProduct()` in `lib/products.js` creates new product objects with adjusted stock on every render.
+
+### Stock UI Behavior
+
+| State | Card | Product Modal |
+|---|---|---|
+| `stock` > 0 or omitted | Normal card; "Add to Cart" button visible | Normal; quantity stepper max = `effectiveStock` |
+| `stock` ≤ 0 | "Out of Stock" badge (red), add-to-cart hidden | "Out of Stock" badge, buttons disabled |
+| `status: "coming-soon"` | "Coming Soon" badge (amber), add-to-cart hidden | "Coming Soon" badge, purchase buttons disabled |
+
+### Stock Badge Priority
+
+When multiple badges apply, priority is: **Coming Soon > Out of Stock > OFFER**.
+
+### Stock Persistence
+
+Since `.md` files are read-only at build time (static export), runtime stock deduction is handled entirely on the client side via `localStorage` (`whatalog_sold`). This means stock resets when the user clears their browser data. For persistent inventory tracking across users, a backend or third-party service would be needed.
+
+---
+
 ## Categories
 
 ### Auto-creation
@@ -920,7 +977,7 @@ const categories = Array.from(new Set(initialProducts.map((p) => p.category)));
 1. **Filter pills:** Each unique category becomes a button in the header's horizontal scrollable nav. The first button is always "All" (shows all products).
 2. **Filtering:** Clicking a category pill filters the product grid to only show products with that category. The filter is applied client-side in `CatalogContainer.jsx`.
 3. **Auto-scroll:** When a category is selected, the catalog section scrolls into view smoothly.
-4. **Available Products title:** Includes a filter icon button (`.btn-filter-catalog`) at the far right of the title row that opens the sort/filter popup.
+4. **Available Products title:** Includes a circular filter icon button (`.btn-filter-catalog`, 50% border-radius) at the far right of the title row that opens the sort/filter popup.
 
 ### Renaming a Category
 
@@ -986,11 +1043,11 @@ Nested popup preservation:
 ### Modal Components Reference
 
 | Component | File | Triggered by | Notes |
-|---|---|---|---|
-| ProductModal | `components/ProductModal.jsx` | Product card tap, promo product tap | Slides up, z-index 210 |
-| QuickBuyModal | `components/QuickBuyModal.jsx` | "Buy" button in ProductModal | Stays on top of ProductModal |
+|---|---|---|---|---|
+| ProductModal | `components/ProductModal.jsx` | Product card tap, promo product tap | Slides up, z-index 210; quantity stepper + stock/status UI |
+| QuickBuyModal | `components/QuickBuyModal.jsx` | "Buy" button in ProductModal | Stays on top of ProductModal; inline qty stepper synced with ProductModal |
 | PromoModal | `components/PromoModal.jsx` | Promo banner tap | Shows related products (promo field match) |
-| OfferModal | `components/OfferModal.jsx` | + button in Flash Offers title | Shows ALL offer products |
+| OfferModal | `components/OfferModal.jsx` | + button in Flash Offers title | Shows all offer products in MasonryGrid |
 | Store Info | Inside `FilterHeader.jsx` | Info icon, footer "Store Info" button | Opens via custom event `open-store-info` |
 | Sort / Filter | Inside `FilterHeader.jsx` | Filter icon, title filter button | Opens via custom event `open-sort-menu` |
 | TemplateInfoModal | `components/TemplateInfoModal.jsx` | Auto on first visit, footer button | Uses `open-template-modal` custom event |
@@ -1040,17 +1097,45 @@ Product cards use `break-inside: avoid` and `display: inline-block` to prevent i
 
 ## Footer
 
-File: `app/CatalogContainer.jsx` (scoped `<style jsx global>`)
+File: `app/CatalogContainer.jsx` (JSX + `app/globals.css` for responsive styles)
 
-The footer is structured top-to-bottom:
+The footer is structured in two main cards:
 
-1. **Google Maps iframe** — Embedded map location.
-2. **Social icons row** — GitHub, Instagram, Facebook, WhatsApp (each as an SVG icon link).
-3. **Info buttons row** — Two buttons side by side:
-   - "Store Info" — dispatches `open-store-info` custom event.
-   - "Template Info" — dispatches `open-template-modal` custom event.
-4. **Copyright** — `© {year} Whatalog. All rights reserved.`
-5. **"Made with ❤️‍🔥 by 1azarito"** — Links to `https://1azarito.vercel.app`.
+### 1. Footer Store Card (`.footer-store-card`)
+
+Displays store identity and key information:
+- **Header row**: Circular store logo (32×32) + store name + "Online Catalog" badge — social links (GitHub, Instagram, Facebook, WhatsApp as SVG icons) at the end of the row (same line on desktop, new line on mobile).
+- **Info grid**: A 3-column grid with icon-labeled entries:
+  - **Location** — `storeConfig.location`
+  - **WhatsApp** — WhatsApp number link
+  - **Hours** — "Monday - Saturday, 9:00 AM – 6:00 PM"
+  - **Deliveries** — "Coordinated shipping in Miami area"
+  - **Store Info** — button that dispatches `open-store-info`
+  - **Template Info** — button that dispatches `open-template-modal`
+
+### 2. Footer Map Card (`.footer-map-card`)
+
+Displays a Google Maps embed:
+- **Title row**: Pin SVG icon + "Where to find us?" — Trustpilot button on the far right.
+- **Map iframe**: Embedded with a CSS filter (`hue-rotate(80deg) saturate(0.8)`) for brand consistency.
+
+### Bottom Row (`.footer-bottom-row`)
+
+Three elements arranged horizontally on desktop, vertically on mobile:
+- **Social links** (same as header row) — `order: 0`
+- **Copyright** — `© {year} Whatalog. All rights reserved. | Made with ❤️‍🔥 by 1azarito` — `order: 1`
+- **Info buttons** (Store Info + Template Info) — `order: 2`
+
+On mobile (≤768px), CSS `order` reorders to: social → info → copyright.
+
+### Scroll-to-Top Button
+
+When the footer enters the viewport (detected via `IntersectionObserver` in `CatalogContainer.jsx`), the floating cart button smoothly transitions into a circular up-arrow button:
+- **Max-width** animates from `300px` → `56px`
+- **Padding** and **border-radius** adjust to make it circular
+- The cart text and badge fade out (`opacity: 0`)
+- On tap, the page scrolls to top smoothly (`window.scrollTo({ top: 0, behavior: "smooth" })`)
+- When scrolling back up, the cart button returns to its original state
 
 The same "Made with ❤️‍🔥 by 1azarito" text also appears in:
 - The Store Info modal (`FilterHeader.jsx`).

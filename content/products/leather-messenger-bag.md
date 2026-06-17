@@ -1,5 +1,5 @@
 ---
-id: "bolso-mensajero"
+id: "leather-messenger-bag"
 name: "Leather Messenger Bag"
 priceUSD: 55.00
 stock: 10

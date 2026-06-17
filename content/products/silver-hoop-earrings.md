@@ -1,5 +1,5 @@
 ---
-id: "aretes-aro-plata"
+id: "silver-hoop-earrings"
 name: "Silver Hoop Earrings"
 priceUSD: 18.00
 stock: 25

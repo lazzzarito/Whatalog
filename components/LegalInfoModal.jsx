@@ -1,30 +1,42 @@
 "use client";
 
-import { useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { lockBodyScroll } from "@/lib/scroll-lock";
 import { useHistoryPopup } from "@/lib/use-history-popup";
+import storeConfig from "@/content/store-config.json";
 
-export default function LegalInfoModal({ visible, onClose }) {
+export default function LegalInfoModal() {
+  const [visible, setVisible] = useState(false);
+
+  const handleClose = useCallback(() => setVisible(false), []);
+
+  useEffect(() => {
+    const handler = () => setVisible(true);
+    window.addEventListener("open-legal-modal", handler);
+    return () => window.removeEventListener("open-legal-modal", handler);
+  }, []);
+
   useEffect(() => {
     if (visible) {
       const unlock = lockBodyScroll();
-      const handler = (e) => { if (e.key === "Escape") onClose(); };
+      const handler = (e) => { if (e.key === "Escape") handleClose(); };
       document.addEventListener("keydown", handler);
       return () => {
         document.removeEventListener("keydown", handler);
         unlock();
       };
     }
-  }, [visible, onClose]);
+  }, [visible, handleClose]);
 
-  useHistoryPopup(visible, onClose);
+  useHistoryPopup(visible, handleClose);
 
   if (!visible) return null;
 
   return (
-    <div className="store-info-overlay" onClick={onClose}>
+    <div className="store-info-overlay" onClick={handleClose}>
       <div className="store-info-modal" onClick={(e) => e.stopPropagation()}>
-        <button className="store-info-close" onClick={onClose}>
+        <button className="store-info-close" onClick={handleClose}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -33,8 +45,13 @@ export default function LegalInfoModal({ visible, onClose }) {
 
         <div className="store-info-scroll">
           <div className="store-info-header">
-            <h2 className="store-info-title">Legal Information</h2>
-            <span className="store-info-badge">Cookies, Privacy & Terms</span>
+            {storeConfig.logoUrl && (
+              <Image src={storeConfig.logoUrl} alt={storeConfig.name} width={36} height={36} style={{ borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+            )}
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+              <h2 className="store-info-title">Legal Information</h2>
+              <span className="store-info-badge">Cookies, Privacy & Terms</span>
+            </div>
           </div>
 
           <div className="store-info-body">

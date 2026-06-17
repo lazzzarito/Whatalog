@@ -14,6 +14,7 @@ const QuickBuyModal = dynamic(() => import("@/components/QuickBuyModal"), { ssr:
 const PromoModal = dynamic(() => import("@/components/PromoModal"), { ssr: false });
 const OfferModal = dynamic(() => import("@/components/OfferModal"), { ssr: false });
 const TemplateInfoModal = dynamic(() => import("@/components/TemplateInfoModal"), { ssr: false });
+const LegalInfoModal = dynamic(() => import("@/components/LegalInfoModal"), { ssr: false });
 
 export default function CatalogContainer({ initialProducts, storeConfig }) {
   // ── Init cart from localStorage ──
@@ -267,7 +268,7 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
   }, [initialProducts, activeCategory, searchQuery, sortBy]);
 
   // ── Infinite scroll ──
-  const initialLoad = 12;
+  const initialLoad = 24;
   const [visibleLimit, setVisibleLimit] = useState(initialLoad);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -293,7 +294,7 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
           setLoadingMore(true);
           setTimeout(() => {
             setVisibleLimit((prev) => {
-              const nextLimit = prev + 8;
+              const nextLimit = prev + 24;
               if (nextLimit >= sortedProducts.length) {
                 setHasMore(false);
               }
@@ -593,6 +594,7 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
       )}
 
       <TemplateInfoModal />
+      <LegalInfoModal />
 
       <style jsx global>{`
         .promo-grid {
@@ -759,15 +761,39 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
       <footer className="app-footer-minimal" ref={footerRef}>
         <div className="footer-store-card">
           <div className="footer-store-header">
+            {storeConfig.logoUrl && (
+              <div className="footer-store-logo">
+                <Image src={storeConfig.logoUrl} alt={storeConfig.name} width={36} height={36} style={{ borderRadius: "50%", objectFit: "cover" }} />
+              </div>
+            )}
             <div className="footer-store-header-left">
               <h3 className="footer-store-name">{storeConfig.name}</h3>
               <span className="store-info-badge">Online Catalog</span>
             </div>
-            {storeConfig.logoUrl && (
-              <div className="footer-store-logo">
-                <Image src={storeConfig.logoUrl} alt={storeConfig.name} width={48} height={48} style={{ borderRadius: "50%", objectFit: "cover" }} />
-              </div>
-            )}
+            <div className="social-links">
+              <a href="https://github.com/lazzzarito/Whatalog" target="_blank" rel="noopener noreferrer" className="social-icon-btn" title="GitHub">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+                </svg>
+              </a>
+              <a href={storeConfig.socialLinks?.instagram || "https://instagram.com"} target="_blank" rel="noopener noreferrer" className="social-icon-btn" title="Instagram">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                  <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                </svg>
+              </a>
+              <a href={storeConfig.socialLinks?.facebook || "https://facebook.com"} target="_blank" rel="noopener noreferrer" className="social-icon-btn" title="Facebook">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+                </svg>
+              </a>
+              <a href={`https://wa.me/${storeConfig.whatsappNumber.replace(/[^0-9+]/g, "")}`} target="_blank" rel="noopener noreferrer" className="social-icon-btn" title="WhatsApp">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                </svg>
+              </a>
+            </div>
           </div>
           <div className="footer-store-grid">
             <div className="store-info-item">
@@ -806,6 +832,24 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
                 <p>Coordinated shipping in Miami area</p>
               </div>
             </div>
+            <div className="store-info-item" style={{ cursor: "pointer" }} onClick={() => window.dispatchEvent(new CustomEvent("open-legal-modal"))}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" />
+              </svg>
+              <div>
+                <strong>Legal Information</strong>
+                <p>Cookies, Privacy &amp; Terms</p>
+              </div>
+            </div>
+            <div className="store-info-item" style={{ cursor: "pointer" }} onClick={() => window.dispatchEvent(new CustomEvent("open-template-modal"))}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" />
+              </svg>
+              <div>
+                <strong>Template Info</strong>
+                <p>About this catalog template</p>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -830,17 +874,7 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
                 </svg>
                 Rate on Trustpilot
               </a>
-              <a
-                href={storeConfig.googleMapsUrl || `https://www.google.com/maps/search/${encodeURIComponent(storeConfig.location)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="footer-map-btn"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                </svg>
-                Open in Google Maps
-              </a>
+
             </div>
           </div>
           <div className="footer-map-frame">
@@ -856,55 +890,12 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
         </div>
 
         <div className="footer-bottom-row">
-          <div className="social-links">
-            <a href="https://github.com/lazzzarito/Whatalog" target="_blank" rel="noopener noreferrer" className="social-icon-btn" title="GitHub">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
-              </svg>
-            </a>
-            <a href={storeConfig.socialLinks?.instagram || "https://instagram.com"} target="_blank" rel="noopener noreferrer" className="social-icon-btn" title="Instagram">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-              </svg>
-            </a>
-            <a href={storeConfig.socialLinks?.facebook || "https://facebook.com"} target="_blank" rel="noopener noreferrer" className="social-icon-btn" title="Facebook">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
-              </svg>
-            </a>
-            <a href={`https://wa.me/${storeConfig.whatsappNumber.replace(/[^0-9+]/g, "")}`} target="_blank" rel="noopener noreferrer" className="social-icon-btn" title="WhatsApp">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-              </svg>
-            </a>
-          </div>
-
           <div className="app-footer-copyright">
             &copy; {new Date().getFullYear()} Whatalog. All rights reserved.
             <span className="footer-credits-text"> Made with <span style={{ color: "#e74c3c" }}>❤️‍🔥</span> by{" "}
             <a href="https://1azarito.vercel.app" target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent-green)", fontWeight: 600, textDecoration: "none" }}>1azarito</a></span>
           </div>
 
-          <div className="footer-info-buttons">
-            <button className="footer-info-btn" onClick={() => window.dispatchEvent(new CustomEvent("open-store-info"))}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="16" x2="12" y2="12"></line>
-                <line x1="12" y1="8" x2="12.01" y2="8"></line>
-              </svg>
-              Store Info
-            </button>
-            <button className="footer-info-btn" onClick={() => window.dispatchEvent(new CustomEvent("open-template-modal"))}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="16" x2="12" y2="12"></line>
-                <line x1="12" y1="8" x2="12.01" y2="8"></line>
-              </svg>
-              Template Info
-            </button>
-          </div>
         </div>
       </footer>
     </>

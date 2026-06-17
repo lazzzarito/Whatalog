@@ -34,8 +34,10 @@ export default function OfferModal({ products, onClose, onAddToCart, onOpenDetai
 
         <div className="store-info-scroll">
           <div className="store-info-header">
-            <h2 className="store-info-title">Flash Offers</h2>
-            <span className="store-info-badge">Limited time deals</span>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+              <h2 className="store-info-title">Flash Offers</h2>
+              <span className="store-info-badge">Limited time deals</span>
+            </div>
           </div>
 
           <div className="store-info-body">

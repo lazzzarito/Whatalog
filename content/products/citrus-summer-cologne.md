@@ -1,5 +1,5 @@
 ---
-id: "colonia-citrica-verano"
+id: "citrus-summer-cologne"
 name: "Citrus Summer Cologne"
 priceUSD: 22.00
 originalPrice: 28.00

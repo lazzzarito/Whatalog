@@ -1,5 +1,5 @@
 ---
-id: "zapatillas-lona"
+id: "canvas-platform-sneakers"
 name: "Canvas Platform Sneakers"
 priceUSD: 42.00
 stock: 18

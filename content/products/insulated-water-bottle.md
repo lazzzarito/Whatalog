@@ -1,5 +1,5 @@
 ---
-id: "botella-agua-termica"
+id: "insulated-water-bottle"
 name: "Insulated Water Bottle"
 priceUSD: 28.00
 originalPrice: 38.00

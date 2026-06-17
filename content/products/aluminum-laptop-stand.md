@@ -1,5 +1,5 @@
 ---
-id: "soporte-laptop-aluminio"
+id: "aluminum-laptop-stand"
 name: "Aluminum Laptop Stand"
 priceUSD: 14.99
 stock: 50

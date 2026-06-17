@@ -1,5 +1,5 @@
 ---
-id: "gafas-aviador-polarizadas"
+id: "polarized-aviator-sunglasses"
 name: "Polarized Aviator Sunglasses"
 priceUSD: 38.00
 stock: 20

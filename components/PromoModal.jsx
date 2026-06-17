@@ -40,8 +40,10 @@ export default function PromoModal({ promo, products, onClose, onAddToCart, onOp
           )}
 
           <div className="store-info-header">
-            <h2 className="store-info-title">{promo.title}</h2>
-            {promo.subtitle && <span className="store-info-badge">{promo.subtitle}</span>}
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+              <h2 className="store-info-title">{promo.title}</h2>
+              {promo.subtitle && <span className="store-info-badge">{promo.subtitle}</span>}
+            </div>
           </div>
 
           <div className="store-info-body">

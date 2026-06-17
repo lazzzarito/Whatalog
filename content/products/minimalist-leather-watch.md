@@ -1,11 +1,11 @@
 ---
-id: "reloj-elegante"
+id: "minimalist-leather-watch"
 name: "Minimalist Leather Watch"
 priceUSD: 45.00
 originalPrice: 65.00
 stock: 3
 category: "Accessories"
-image: "reloj_elegante.webp"
+image: "minimalist-leather-watch.webp"
 description: "Classic watch with a white dial and rose gold indices. Genuine brown leather strap."
 featured: true
 # Also shown in the Flash Offers section (along with featured)

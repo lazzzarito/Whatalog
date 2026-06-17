@@ -1,5 +1,5 @@
 ---
-id: "set-velas-soja"
+id: "scented-soy-candle-trio"
 name: "Scented Soy Candle Trio"
 priceUSD: 34.00
 stock: 20

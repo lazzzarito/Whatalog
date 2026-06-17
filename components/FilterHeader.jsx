@@ -4,7 +4,7 @@ import { useRef, useEffect, useState } from "react";
 import Image from "next/image";
 import { lockBodyScroll } from "@/lib/scroll-lock";
 import { useHistoryPopup } from "@/lib/use-history-popup";
-import LegalInfoModal from "@/components/LegalInfoModal";
+
 
 export default function FilterHeader({
   categories,
@@ -23,7 +23,6 @@ export default function FilterHeader({
   const [isMobileSearchActive, setIsMobileSearchActive] = useState(false);
   const [showStoreInfo, setShowStoreInfo] = useState(false);
   const [showSortMenu, setShowSortMenu] = useState(false);
-  const [showLegalInfo, setShowLegalInfo] = useState(false);
 
   // ── Auto-scroll active category tab into view ──
   useEffect(() => {
@@ -234,8 +233,10 @@ export default function FilterHeader({
             </button>
 
             <div className="store-info-header">
-              <h2 className="store-info-title">Filters</h2>
-              <span className="store-info-badge">Adjust your search</span>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+                <h2 className="store-info-title">Filters</h2>
+                <span className="store-info-badge">Adjust your search</span>
+              </div>
             </div>
 
             <div className="store-info-body">
@@ -329,13 +330,13 @@ export default function FilterHeader({
 
             <div className="store-info-scroll">
               <div className="store-info-header">
+                {storeConfig.logoUrl && (
+                  <Image src={storeConfig.logoUrl} alt={storeConfig.name} width={36} height={36} style={{ borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+                )}
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
                   <h2 className="store-info-title">{storeConfig.name}</h2>
                   <span className="store-info-badge">Online Catalog</span>
                 </div>
-                {storeConfig.logoUrl && (
-                  <Image src={storeConfig.logoUrl} alt={storeConfig.name} width={44} height={44} style={{ borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
-                )}
               </div>
 
               <div className="store-info-body">
@@ -455,7 +456,7 @@ export default function FilterHeader({
                 Contact us on WhatsApp
               </a>
 
-              <button className="store-info-legal-btn" onClick={() => setShowLegalInfo(true)}>
+              <button className="store-info-legal-btn" onClick={() => window.dispatchEvent(new CustomEvent("open-legal-modal"))}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
                 </svg>
@@ -471,7 +472,6 @@ export default function FilterHeader({
         </div>
       )}
 
-      <LegalInfoModal visible={showLegalInfo} onClose={() => setShowLegalInfo(false)} />
     </>
   );
 }
