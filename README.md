@@ -20,7 +20,7 @@ Most small businesses don't need a full e‑commerce platform. They need a **cat
 - A premium‑looking storefront in under 30 seconds
 - Zero backend to maintain (no database, no API, no server logic)
 - Orders delivered straight to your WhatsApp — warm leads, not abandoned carts
-- Full control: your products are simple `.md` files, your images are local, your config is JSON
+- Full control: load your products from Markdown (.md), Excel (.xlsx), CSV (.csv), or Google Sheets
 - Smart popup stacking: press back once per popup, double-back-to-exit from the home page
 - Free forever, open source, MIT licensed
 
@@ -30,7 +30,7 @@ Most small businesses don't need a full e‑commerce platform. They need a **cat
 
 | Feature                             | What it does                                                                                                  |
 | ----------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| **Markdown-based products**         | Write products as `.md` files with YAML frontmatter. No CMS, no admin panel.                                  |
+| **Multi-format Catalogs**          | Load products from local `.md` files, Excel (`.xlsx`), `.csv` files, or Google Sheets. Support for variable products (options & attributes) in all formats. |
 | **CSS multi-column masonry grid**   | True Pinterest-style waterfall layout with varied aspect ratios (tall / square / wide). No gaps below cards.  |
 | **Search & filters**                | Real‑time search, category filtering, and multiple sort modes.                                                |
 | **Shopping cart with localStorage** | Persists across sessions. Add, remove, update quantities — works offline.                                     |
@@ -68,7 +68,7 @@ Open [http://localhost:3000](http://localhost:3000) — your catalog is live.
 Everything is designed to be edited without touching code.
 
 - **Store info** — edit `content/store-config.json` (name, phone, currency, promo banners, promo links)
-- **Products** — add `.md` files to `content/products/` with frontmatter (title, price, category, image, stock, status, options)
+- **Products** — add `.md` files to `content/products/`, or edit the local `content/products.xlsx` / `content/products.csv` catalog sheets
 - **Images** — place product images in `content/products/` and promos in `content/promos/`, or use Unsplash URLs directly
 - **Colors & fonts** — adjust CSS variables in `app/globals.css`
 - **Manual translation** — to customize any UI string, edit the component files directly (all text is hardcoded in English)

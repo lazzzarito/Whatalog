@@ -5,7 +5,7 @@ import SafeImage from "@/components/SafeImage";
 import { lockBodyScroll } from "@/lib/scroll-lock";
 import { useHistoryPopup } from "@/lib/use-history-popup";
 
-export default function ProductModal({ product, onClose, onAddToCart, storeConfig, onQuickBuy, productQty = 1, onQtyChange }) {
+export default function ProductModal({ product, onClose, onAddToCart, storeConfig, onQuickBuy, productQty = 1, onQtyChange, isFavorited = false, onToggleFavorite }) {
   // ── Track active image index for gallery ──
   const [activeImage, setActiveImage] = useState(0);
   const [addingToCart, setAddingToCart] = useState(false);
@@ -30,6 +30,15 @@ export default function ProductModal({ product, onClose, onAddToCart, storeConfi
   }, [product]);
 
   useHistoryPopup(!!product, onClose);
+
+  const [animateHeart, setAnimateHeart] = useState(false);
+
+  useEffect(() => {
+    if (animateHeart) {
+      const timer = setTimeout(() => setAnimateHeart(false), 400);
+      return () => clearTimeout(timer);
+    }
+  }, [animateHeart]);
 
   if (!product) return null;
 
@@ -93,9 +102,15 @@ export default function ProductModal({ product, onClose, onAddToCart, storeConfi
     });
   };
 
+  const handleToggleFav = () => {
+    setAnimateHeart(true);
+    if (onToggleFavorite) onToggleFavorite(product.id);
+  };
+
   const handleShare = async () => {
     const text = `Check this out: ${name} - $${activePrice.toFixed(2)}`;
-    const url = window.location.href;
+    const url = `${window.location.origin}/product/${encodeURIComponent(product.id)}`;
+    try { await navigator.clipboard.writeText(url); } catch (e) {}
     if (navigator.share) {
       await navigator.share({ title: name, text, url }).catch(() => {});
     } else {
@@ -112,7 +127,32 @@ export default function ProductModal({ product, onClose, onAddToCart, storeConfi
       <div className="cart-overlay open" onClick={onClose} style={{ zIndex: 200 }} />
       <div className="product-modal-container">
         <div className="product-modal-card">
-          <button className="product-modal-close" onClick={onClose}>&times;</button>
+          <div className="product-modal-header-bar">
+            <button className="product-modal-back-btn" onClick={onClose} aria-label="Back">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+            <div className="product-modal-header-actions">
+              <button className="btn-header-share" onClick={handleShare} aria-label="Share">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                </svg>
+              </button>
+              <button className={`btn-header-heart${animateHeart ? " heart-pop" : ""}`} onClick={handleToggleFav} aria-label={isFavorited ? "Remove from favorites" : "Add to favorites"}>
+                {isFavorited ? (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="#e74c3c" stroke="#e74c3c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                  </svg>
+                ) : (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                  </svg>
+                )}
+              </button>
+            </div>
+          </div>
 
           <div className="product-modal-scroll-content">
             <div className="product-modal-content">
@@ -221,12 +261,6 @@ export default function ProductModal({ product, onClose, onAddToCart, storeConfi
 
           <div className="product-modal-footer">
             <div className="product-modal-footer-row">
-              <button className="btn-share" onClick={handleShare} title="Share" aria-label="Share">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
-                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-                </svg>
-              </button>
               <div className={`btn-add-cart-wrap${addingToCart ? ' added' : ''}`}>
                 <div className="btn-add-cart-stepper">
                   <button
@@ -268,7 +302,7 @@ export default function ProductModal({ product, onClose, onAddToCart, storeConfi
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="20 6 9 17 4 12" />
                       </svg>
-                      Added
+                      <span className="btn-lbl">Added</span><span className="btn-lbl-short">Done</span>
                     </>
                   ) : (
                     <>
@@ -276,7 +310,7 @@ export default function ProductModal({ product, onClose, onAddToCart, storeConfi
                         <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
                         <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
                       </svg>
-                      Add to Cart
+                      <span className="btn-lbl">Add to Cart</span><span className="btn-lbl-short">Add</span>
                     </>
                   )}
                   {showPlusBadge && <span className="cart-plus-badge">+{lastAddedQty}</span>}
@@ -288,7 +322,7 @@ export default function ProductModal({ product, onClose, onAddToCart, storeConfi
                   <line x1="3" y1="6" x2="21" y2="6" />
                   <path d="M16 10a4 4 0 0 1-8 0" />
                 </svg>
-                Buy Now
+                <span className="btn-lbl">Buy Now</span><span className="btn-lbl-short">Buy</span>
               </button>
             </div>
           </div>
@@ -323,6 +357,7 @@ export default function ProductModal({ product, onClose, onAddToCart, storeConfi
           animation: modal-slide-up 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
           display: flex;
           flex-direction: column;
+          container-type: inline-size;
         }
 
         @media (min-width: 1024px) {
@@ -343,28 +378,60 @@ export default function ProductModal({ product, onClose, onAddToCart, storeConfi
           to { transform: translateY(0); opacity: 1; }
         }
 
-        .product-modal-close {
+        .product-modal-header-bar {
           position: absolute;
-          top: 1rem;
-          right: 1rem;
+          top: 0;
+          left: 0;
+          right: 0;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0.75rem 0.75rem 0.5rem 0.75rem;
+          z-index: 15;
+          pointer-events: none;
+        }
+
+        .product-modal-header-bar > * {
+          pointer-events: auto;
+        }
+
+        .product-modal-header-actions {
+          display: flex;
+          gap: 0.5rem;
+        }
+
+        .product-modal-back-btn,
+        .btn-header-share,
+        .btn-header-heart {
           background: var(--bg-secondary);
           border: none;
           width: 36px;
           height: 36px;
           border-radius: 50%;
-          font-size: 1.5rem;
-          color: var(--text-secondary);
-          cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
-          z-index: 10;
-          transition: all 0.2s;
+          cursor: pointer;
+          color: var(--text-primary);
+          transition: background 0.2s;
+          flex-shrink: 0;
         }
 
-        .product-modal-close:hover {
-          color: var(--text-primary);
+        .product-modal-back-btn:hover,
+        .btn-header-share:hover,
+        .btn-header-heart:hover {
           background: var(--border-color);
+        }
+
+        .btn-header-heart.heart-pop {
+          animation: heart-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.5);
+        }
+
+        @keyframes heart-pop {
+          0% { transform: scale(1); }
+          30% { transform: scale(1.3); }
+          60% { transform: scale(0.9); }
+          100% { transform: scale(1); }
         }
 
         .product-modal-scroll-content {
@@ -381,7 +448,7 @@ export default function ProductModal({ product, onClose, onAddToCart, storeConfi
           display: grid;
           grid-template-columns: 1fr;
           gap: 2rem;
-          padding: 2rem 1.5rem 1.5rem 1.5rem;
+          padding: 3.5rem 1.5rem 1.5rem 1.5rem;
         }
 
         .product-modal-image-col {
@@ -648,26 +715,6 @@ export default function ProductModal({ product, onClose, onAddToCart, storeConfi
           align-items: center;
         }
 
-        .product-modal-footer-row .btn-share {
-          flex: 0 0 auto;
-          width: 2.75rem;
-          height: 2.75rem;
-          padding: 0;
-          border-radius: 50%;
-          border: 1.5px solid var(--border-color);
-          background: var(--bg-secondary);
-          color: var(--text-primary);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-
-        .product-modal-footer-row .btn-share:hover {
-          background: var(--border-color);
-        }
-
         .btn-add-cart-wrap {
           flex: 1;
           display: flex;
@@ -821,6 +868,13 @@ export default function ProductModal({ product, onClose, onAddToCart, storeConfi
 
         .product-modal-footer-row .btn-direct-buy:active {
           transform: scale(0.97);
+        }
+
+        .btn-lbl-short { display: none; }
+
+        @container (max-width: 400px) {
+          .btn-lbl { display: none; }
+          .btn-lbl-short { display: inline; }
         }
       `}</style>
     </>

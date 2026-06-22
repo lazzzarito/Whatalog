@@ -7,28 +7,19 @@ import FilterHeader from "@/components/FilterHeader";
 import MasonryGrid from "@/components/MasonryGrid";
 import ProductCard from "@/components/ProductCard";
 import { initPopupHistory } from "@/lib/popup-history";
+import CatalogSkeleton from "@/components/CatalogSkeleton";
 
 const ProductModal = dynamic(() => import("@/components/ProductModal"), { ssr: false });
 const Cart = dynamic(() => import("@/components/Cart"), { ssr: false });
 const QuickBuyModal = dynamic(() => import("@/components/QuickBuyModal"), { ssr: false });
 const PromoModal = dynamic(() => import("@/components/PromoModal"), { ssr: false });
 const OfferModal = dynamic(() => import("@/components/OfferModal"), { ssr: false });
-const TemplateInfoModal = dynamic(() => import("@/components/TemplateInfoModal"), { ssr: false });
+const CustomerInfoModal = dynamic(() => import("@/components/CustomerInfoModal"), { ssr: false });
 const LegalInfoModal = dynamic(() => import("@/components/LegalInfoModal"), { ssr: false });
+const FavoritesModal = dynamic(() => import("@/components/FavoritesModal"), { ssr: false });
 
 export default function CatalogContainer({ initialProducts, storeConfig }) {
-  // ── Init cart from localStorage ──
-  const [cartItems, setCartItems] = useState(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const stored = localStorage.getItem("whatalog_cart");
-        return stored ? JSON.parse(stored) : [];
-      } catch (e) {
-        console.error("Error reading cart from localStorage:", e);
-      }
-    }
-    return [];
-  });
+  const [cartItems, setCartItems] = useState([]);
   const [isClient, setIsClient] = useState(false);
   const [toast, setToast] = useState(null);
   const [toastType, setToastType] = useState("success");
@@ -37,15 +28,7 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
   const offersRef = useRef(null);
   const persistTimerRef = useRef(null);
   const [productQtyMap, setProductQtyMap] = useState({});
-  const [soldMap, setSoldMap] = useState(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const raw = localStorage.getItem("whatalog_sold");
-        return raw ? JSON.parse(raw) : {};
-      } catch (e) {}
-    }
-    return {};
-  });
+  const [soldMap, setSoldMap] = useState({});
 
   const persistSold = (map) => {
     try { localStorage.setItem("whatalog_sold", JSON.stringify(map)); } catch (e) {}
@@ -69,9 +52,7 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
   }, [soldMap]);
 
   useEffect(() => {
-    startTransition(() => {
-      setIsClient(true);
-    });
+    setIsClient(true);
   }, []);
 
   // ── Cart persistence (debounced) ──
@@ -284,7 +265,7 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
 
   // ── IntersectionObserver for load-more trigger ──
   useEffect(() => {
-    if (!hasMore) return;
+    if (!hasMore || !isClient) return;
 
     const el = loaderRef.current;
     const observer = new IntersectionObserver(
@@ -316,7 +297,7 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
         observer.unobserve(el);
       }
     };
-  }, [hasMore, loadingMore, sortedProducts.length]);
+  }, [hasMore, loadingMore, sortedProducts.length, isClient]);
 
   // ── Promo & offer sections ──
   const promoBanners = storeConfig.promoBanners || [];
@@ -329,10 +310,47 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
   const [selectedPromo, setSelectedPromo] = useState(null);
   const [quickBuyProduct, setQuickBuyProduct] = useState(null);
   const [showOffers, setShowOffers] = useState(false);
+  const [showFavorites, setShowFavorites] = useState(false);
+  const [cameFromFavorites, setCameFromFavorites] = useState(false);
+  const [favoriteIds, setFavoriteIds] = useState([]);
+
+  const toggleFavorite = useCallback((productId) => {
+    const isCurrentlyFav = favoriteIds.includes(productId);
+    const next = isCurrentlyFav
+      ? favoriteIds.filter((id) => id !== productId)
+      : [...favoriteIds, productId];
+    setFavoriteIds(next);
+    try { localStorage.setItem("whatalog_favorites", JSON.stringify(next)); } catch (e) {}
+    showToast(isCurrentlyFav ? "Removed from Favorites" : "Added to Favorites", isCurrentlyFav ? "warning" : "success");
+  }, [favoriteIds]);
+
+  // ── Load persisted data from localStorage after hydration ──
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("whatalog_cart");
+      if (stored) setCartItems(JSON.parse(stored));
+    } catch (e) { console.error("Error reading cart:", e); }
+  }, []);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("whatalog_sold");
+      if (raw) setSoldMap(JSON.parse(raw));
+    } catch (e) {}
+  }, []);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("whatalog_favorites");
+      if (stored) setFavoriteIds(JSON.parse(stored));
+    } catch (e) {}
+  }, []);
+
   const footerRef = useRef(null);
   const [isFooterVisible, setIsFooterVisible] = useState(false);
 
   useEffect(() => {
+    if (!isClient) return;
     const el = footerRef.current;
     if (!el) return;
     const observer = new IntersectionObserver(
@@ -341,7 +359,7 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
     );
     observer.observe(el);
     return () => observer.disconnect();
-  }, []);
+  }, [isClient]);
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -384,6 +402,8 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
     return initialProducts.filter((p) => p.promo === selectedPromo.target);
   }, [selectedPromo, initialProducts]);
 
+  if (!isClient) return <CatalogSkeleton />;
+
   return (
     <>
       <FilterHeader
@@ -395,6 +415,8 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
         sortBy={sortBy}
         onSortChange={setSortBy}
         storeConfig={storeConfig}
+        favoriteCount={favoriteIds.length}
+        onOpenFavorites={() => setShowFavorites(true)}
       />
 
       {toast && (
@@ -453,14 +475,17 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
                 </svg>
               </button>
             </h2>
-            <MasonryGrid>
-              {offerProducts.slice(0, 8).map((product) => (
+            <MasonryGrid key="offers">
+              {offerProducts.slice(0, 8).map((product, i) => (
                 <ProductCard
                   key={product.id}
                   product={toEffectiveProduct(product)}
                   onAddToCart={handleAddToCart}
                   onOpenDetails={setSelectedProduct}
+                  isFavorited={favoriteIds.includes(product.id)}
+                  onToggleFavorite={toggleFavorite}
                   priority
+                  index={i}
                 />
               ))}
             </MasonryGrid>
@@ -484,14 +509,17 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
             </button>
           </h2>
           {visibleProducts.length > 0 ? (
-            <MasonryGrid>
+            <MasonryGrid key={`${activeCategory}-${searchQuery}-${sortBy}`}>
               {visibleProducts.map((product, i) => (
                 <ProductCard
                   key={product.id}
                   product={toEffectiveProduct(product)}
                   onAddToCart={handleAddToCart}
                   onOpenDetails={setSelectedProduct}
+                  isFavorited={favoriteIds.includes(product.id)}
+                  onToggleFavorite={toggleFavorite}
                   priority={i < 4}
+                  index={i}
                 />
               ))}
             </MasonryGrid>
@@ -552,12 +580,20 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
 
       <ProductModal
         product={toEffectiveProduct(selectedProduct)}
-        onClose={() => setSelectedProduct(null)}
+        onClose={() => {
+          setSelectedProduct(null);
+          if (cameFromFavorites) {
+            setShowFavorites(true);
+            setCameFromFavorites(false);
+          }
+        }}
         onAddToCart={handleAddToCart}
         storeConfig={storeConfig}
         onQuickBuy={setQuickBuyProduct}
         productQty={productQty}
         onQtyChange={handleQtyChange}
+        isFavorited={selectedProduct ? favoriteIds.includes(selectedProduct.id) : false}
+        onToggleFavorite={toggleFavorite}
       />
 
       {quickBuyProduct && (
@@ -593,8 +629,23 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
         />
       )}
 
-      <TemplateInfoModal />
+      <CustomerInfoModal />
       <LegalInfoModal />
+
+      {showFavorites && (
+        <FavoritesModal
+          products={initialProducts}
+          favoriteIds={favoriteIds}
+          onToggleFavorite={toggleFavorite}
+          onClose={() => setShowFavorites(false)}
+          onAddToCart={handleAddToCart}
+          onOpenProduct={(product) => {
+            setCameFromFavorites(true);
+            setShowFavorites(false);
+            setSelectedProduct(product);
+          }}
+        />
+      )}
 
       <style jsx global>{`
         .promo-grid {
@@ -712,33 +763,6 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
           background: var(--border-color);
         }
 
-        .footer-info-buttons {
-          display: flex;
-          gap: 0.5rem;
-          justify-content: center;
-          margin-bottom: 0.75rem;
-        }
-
-        .footer-info-btn {
-          display: flex;
-          align-items: center;
-          gap: 0.35rem;
-          background: var(--bg-secondary);
-          border: 1px solid var(--border-color);
-          color: var(--text-secondary);
-          padding: 0.45rem 0.85rem;
-          border-radius: 20px;
-          font-size: 0.8rem;
-          font-weight: 500;
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-
-        .footer-info-btn:hover {
-          background: var(--border-color);
-          color: var(--text-primary);
-        }
-
         .footer-made-by {
           font-size: 0.78rem;
           color: var(--text-secondary);
@@ -841,15 +865,7 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
                 <p>Cookies, Privacy &amp; Terms</p>
               </div>
             </div>
-            <div className="store-info-item" style={{ cursor: "pointer" }} onClick={() => window.dispatchEvent(new CustomEvent("open-template-modal"))}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" />
-              </svg>
-              <div>
-                <strong>Template Info</strong>
-                <p>About this catalog template</p>
-              </div>
-            </div>
+
           </div>
         </div>
 

@@ -21,7 +21,7 @@ export default function SafeImage({ src, fallback = "/images/placeholder.svg", a
       style={imgStyle}
       sizes={sizes}
       fetchPriority={priority ? "high" : undefined}
-      loading={priority ? "eager" : "lazy"}
+      loading={priority ? "eager" : "eager"}
       onError={() => {
         if (!errored) {
           setImgSrc(fallback);

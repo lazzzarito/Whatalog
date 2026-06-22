@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { motion } from "framer-motion";
 import SafeImage from "@/components/SafeImage";
 
-export default function ProductCard({ product, onAddToCart, onOpenDetails, priority }) {
+export default function ProductCard({ product, onAddToCart, onOpenDetails, priority, isFavorited = false, onToggleFavorite, index = 0 }) {
   const { name, priceUSD, originalPrice, category, image, description, ratioClass } = product;
   const hasDiscount = originalPrice && originalPrice > priceUSD;
   const hasOptions = product.options && Object.keys(product.options).length > 0;
@@ -28,9 +29,14 @@ export default function ProductCard({ product, onAddToCart, onOpenDetails, prior
   }, [canInteract, hasOptions, onOpenDetails, product, onAddToCart]);
 
   return (
-    <div
+    <motion.div
       className="product-card"
       onClick={() => onOpenDetails(product)}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, delay: index * 0.04, ease: [0.25, 0.46, 0.45, 0.94] }}
+      whileHover={{ y: -5, boxShadow: "0 10px 30px rgba(17, 27, 33, 0.08)" }}
+      whileTap={{ scale: 0.98 }}
     >
       <div className={`product-card-image-wrapper ${ratioClass}`}>
         <SafeImage
@@ -48,6 +54,21 @@ export default function ProductCard({ product, onAddToCart, onOpenDetails, prior
         ) : hasDiscount ? (
           <span className="product-card-badge">OFFER</span>
         ) : null}
+        <button
+          className={`product-card-fav${isFavorited ? " favorited" : ""}`}
+          onClick={(e) => { e.stopPropagation(); if (onToggleFavorite) onToggleFavorite(product.id); }}
+          aria-label={isFavorited ? "Remove from favorites" : "Add to favorites"}
+        >
+          {isFavorited ? (
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#e74c3c" stroke="#e74c3c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+            </svg>
+          ) : (
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+            </svg>
+          )}
+        </button>
       </div>
       <div className="product-card-info">
         <span className="product-card-category">{category}</span>
@@ -75,6 +96,6 @@ export default function ProductCard({ product, onAddToCart, onOpenDetails, prior
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
