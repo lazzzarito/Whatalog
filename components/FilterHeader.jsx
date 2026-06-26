@@ -226,7 +226,7 @@ export default function FilterHeader({
       {showSortMenu && (
         <div className="sort-modal-overlay" onClick={() => setShowSortMenu(false)}>
           <div className="sort-modal-sheet" onClick={(e) => e.stopPropagation()}>
-            <button className="store-info-close" onClick={() => setShowSortMenu(false)}>
+            <button className="modal-close" onClick={() => setShowSortMenu(false)}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -322,7 +322,7 @@ export default function FilterHeader({
       {showStoreInfo && (
         <div className="store-info-overlay" onClick={() => setShowStoreInfo(false)}>
           <div className="store-info-modal" onClick={(e) => e.stopPropagation()} style={{ maxHeight: "80dvh" }}>
-             <button className="store-info-close" onClick={() => setShowStoreInfo(false)}>
+             <button className="modal-close" onClick={() => setShowStoreInfo(false)}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -385,6 +385,7 @@ export default function FilterHeader({
                     <p>Coordinated shipping in Miami area</p>
                   </div>
                 </div>
+
               </div>
 
               <div className="store-info-howto">

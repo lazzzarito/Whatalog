@@ -23,6 +23,8 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
   const [isClient, setIsClient] = useState(false);
   const [toast, setToast] = useState(null);
   const [toastType, setToastType] = useState("success");
+  const [undoItem, setUndoItem] = useState(null);
+  const undoTimeoutRef = useRef(null);
   const toastTimeoutRef = useRef(null);
   const catalogRef = useRef(null);
   const offersRef = useRef(null);
@@ -88,6 +90,7 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
   useEffect(() => {
     return () => {
       if (persistTimerRef.current) clearTimeout(persistTimerRef.current);
+      if (undoTimeoutRef.current) clearTimeout(undoTimeoutRef.current);
     };
   }, []);
 
@@ -171,8 +174,20 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
     const itemToRemove = cartItems.find((item) => item.id === id);
     saveCart(cartItems.filter((item) => item.id !== id));
     if (itemToRemove) {
+      setUndoItem(itemToRemove);
       showToast(`Removed: ${itemToRemove.name}`);
+      window.clearTimeout(undoTimeoutRef.current);
+      undoTimeoutRef.current = window.setTimeout(() => setUndoItem(null), 4000);
     }
+  };
+
+  const handleUndoRemove = () => {
+    if (!undoItem) return;
+    window.clearTimeout(undoTimeoutRef.current);
+    setUndoItem(null);
+    setToast(null);
+    saveCart([...cartItems, undoItem]);
+    showToast(`Restored: ${undoItem.name}`);
   };
 
   // ── Category, search & sort state ──
@@ -311,7 +326,6 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
   const [quickBuyProduct, setQuickBuyProduct] = useState(null);
   const [showOffers, setShowOffers] = useState(false);
   const [showFavorites, setShowFavorites] = useState(false);
-  const [cameFromFavorites, setCameFromFavorites] = useState(false);
   const [favoriteIds, setFavoriteIds] = useState([]);
 
   const toggleFavorite = useCallback((productId) => {
@@ -420,7 +434,7 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
       />
 
       {toast && (
-        <div className={`toast-notification ${toastType}`}>
+        <div className={`toast-notification ${toastType}${undoItem ? " has-undo" : ""}`}>
           {toastType === "warning" ? (
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
@@ -434,6 +448,9 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
             </svg>
           )}
           <span>{toast}</span>
+          {undoItem && (
+            <button className="toast-undo-btn" onClick={handleUndoRemove}>Undo</button>
+          )}
         </div>
       )}
 
@@ -575,18 +592,17 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
           }}
           isFooterVisible={isFooterVisible}
           scrollToTop={scrollToTop}
+          onEditItem={(item) => {
+            handleRemoveItem(item.id);
+            const originalProduct = initialProducts.find(p => p.id === (item.productId || item.id.split("::")[0]));
+            if (originalProduct) setSelectedProduct(originalProduct);
+          }}
         />
       )}
 
       <ProductModal
         product={toEffectiveProduct(selectedProduct)}
-        onClose={() => {
-          setSelectedProduct(null);
-          if (cameFromFavorites) {
-            setShowFavorites(true);
-            setCameFromFavorites(false);
-          }
-        }}
+        onClose={() => setSelectedProduct(null)}
         onAddToCart={handleAddToCart}
         storeConfig={storeConfig}
         onQuickBuy={setQuickBuyProduct}
@@ -639,11 +655,7 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
           onToggleFavorite={toggleFavorite}
           onClose={() => setShowFavorites(false)}
           onAddToCart={handleAddToCart}
-          onOpenProduct={(product) => {
-            setCameFromFavorites(true);
-            setShowFavorites(false);
-            setSelectedProduct(product);
-          }}
+          onOpenProduct={setSelectedProduct}
         />
       )}
 
@@ -865,6 +877,18 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
                 <p>Cookies, Privacy &amp; Terms</p>
               </div>
             </div>
+
+            {storeConfig.donationUrl && (
+              <a href={storeConfig.donationUrl} target="_blank" rel="noopener noreferrer" className="store-info-item" style={{ cursor: "pointer", textDecoration: "none", color: "inherit", display: "flex" }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e74c3c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                </svg>
+                <div>
+                  <strong style={{ color: "#e74c3c" }}>Support the template</strong>
+                  <p>Buy me a coffee ❤️</p>
+                </div>
+              </a>
+            )}
 
           </div>
         </div>

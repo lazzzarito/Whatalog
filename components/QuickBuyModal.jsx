@@ -144,7 +144,7 @@ export default function QuickBuyModal({ product, onClose, onOrderComplete, store
     <>
       <div className="quickbuy-overlay" onClick={onClose} />
       <div className="quickbuy-modal" onClick={(e) => e.stopPropagation()}>
-        <button className="store-info-close" onClick={onClose}>
+        <button className="modal-close" onClick={onClose}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -385,6 +385,7 @@ export default function QuickBuyModal({ product, onClose, onOrderComplete, store
           min-height: 0;
           scrollbar-width: none;
           -ms-overflow-style: none;
+          padding-bottom: 80px;
         }
 
         .quickbuy-scroll::-webkit-scrollbar {
@@ -515,9 +516,15 @@ export default function QuickBuyModal({ product, onClose, onOrderComplete, store
         }
 
         .quickbuy-footer {
-          padding: 1rem 1.5rem 2rem;
-          border-top: 1px solid var(--border-color);
-          flex-shrink: 0;
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          padding: 0.5rem 1.5rem 2rem;
+          background: transparent;
+          box-shadow: 0 -4px 12px rgba(0,0,0,0.04);
+          backdrop-filter: blur(6px);
+          -webkit-backdrop-filter: blur(6px);
         }
 
         .quickbuy-btn-primary {

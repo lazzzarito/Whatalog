@@ -17,9 +17,10 @@ const defaultCustomer = () => {
   return { name: "", phone: "", delivery: "pickup", address: "", payment: "", paymentOther: "" };
 };
 
-export default function Cart({ cartItems, onUpdateQty, onRemoveItem, onClearCart, storeConfig, onOrderComplete, isFooterVisible, scrollToTop }) {
+export default function Cart({ cartItems, onUpdateQty, onRemoveItem, onClearCart, storeConfig, onOrderComplete, isFooterVisible, scrollToTop, onEditItem }) {
   const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState(1);
+  const [showSummary, setShowSummary] = useState(false);
   const [customer, setCustomer] = useState(defaultCustomer);
   const [confirmed, setConfirmed] = useState(false);
   const [confirmedItems, setConfirmedItems] = useState(null);
@@ -148,25 +149,20 @@ export default function Cart({ cartItems, onUpdateQty, onRemoveItem, onClearCart
 
       <div className={`cart-drawer ${isOpen ? "open" : ""}`}>
         <div className="cart-header">
-          {step === 2 && !confirmed && (
-            <button className="btn-back-step" onClick={() => setStep(1)} title="Back">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="19" y1="12" x2="5" y2="12"></line>
-                <polyline points="12 19 5 12 12 5"></polyline>
-              </svg>
-            </button>
+          <h2>{confirmed ? "Order Confirmed" : "Your Cart"}</h2>
+          {!confirmed && (
+            <div className="cart-step-pill">
+              <button className={`pill-btn${step === 1 ? " active" : ""}`} onClick={() => setStep(1)}>Cart</button>
+              <button className={`pill-btn${step === 2 ? " active" : ""}`} onClick={() => setStep(2)}>Details</button>
+            </div>
           )}
-          <h2>{confirmed ? "Order Confirmed" : step === 1 ? "Your Cart" : "Your Details"}</h2>
-          <button className="btn-close-cart" onClick={handleClose}>&times;</button>
+          <button className="modal-close" onClick={handleClose}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
         </div>
-
-        {!confirmed && (
-        <div className="cart-step-indicator">
-          <span className={`cart-step-dot ${step === 1 ? "active" : ""} ${step > 1 ? "done" : ""}`} />
-          <span className="cart-step-line" />
-          <span className={`cart-step-dot ${step === 2 ? "active" : ""}`} />
-        </div>
-        )}
 
         <div className="cart-items-container">
           {showingConfirm ? (
@@ -242,16 +238,18 @@ export default function Cart({ cartItems, onUpdateQty, onRemoveItem, onClearCart
                 Back to store
               </button>
             </div>
-          ) : step === 1 ? (
+          ) : (
+          <div className="cart-step-animated" key={step}>
+          {step === 1 ? (
             <>
               {cartItems.map((item) => (
                 <div className="cart-item" key={item.id}>
-                  <div className="cart-item-image-wrapper">
+                  <div className="cart-item-image-wrapper" onClick={() => onEditItem?.(item)} style={{ cursor: "pointer" }}>
                     <SafeImage src={item.image} alt={item.name} width={80} height={80} className="cart-item-image" />
                   </div>
                   <div className="cart-item-details">
                     {item.category && <span className="cart-item-category">{item.category}</span>}
-                    <span className="cart-item-title">{item.name}</span>
+                    <span className="cart-item-title" onClick={() => onEditItem?.(item)} style={{ cursor: "pointer" }}>{item.name}</span>
                     {item.selectedOptions && Object.keys(item.selectedOptions).length > 0 && (
                       <span style={{ fontSize: "0.75rem", color: "var(--text-secondary)", display: "block", marginBottom: "0.2rem" }}>
                         {Object.entries(item.selectedOptions).map(([k, v]) => `${k}: ${v}`).join(" | ")}
@@ -285,63 +283,96 @@ export default function Cart({ cartItems, onUpdateQty, onRemoveItem, onClearCart
               ))}
             </>
           ) : (
-            <div className="cart-checkout-form">
-              <div className="checkout-field">
-                <label className="checkout-label">Name *</label>
-                <input className={`checkout-input${submitted && errors.name ? " error" : ""}`} type="text" placeholder="Enter your full name" value={customer.name} onChange={(e) => update("name", e.target.value)} onBlur={() => blur("name")} />
-                {submitted && errors.name && <span className="cerror">{errors.name}</span>}
-              </div>
-              <div className="checkout-field">
-                <label className="checkout-label">Phone *</label>
-                <input className={`checkout-input${submitted && errors.phone ? " error" : ""}`} type="tel" placeholder="e.g. +1 555 123 4567" value={customer.phone} onChange={(e) => update("phone", e.target.value)} onBlur={() => blur("phone")} />
-                {submitted && errors.phone && <span className="cerror">{errors.phone}</span>}
-              </div>
-              <div className="checkout-field">
-                <label className="checkout-label">Pickup / Delivery *</label>
-                <div className="checkout-radio-group">
-                  <label className={`checkout-radio ${customer.delivery === "pickup" ? "active" : ""}`}>
-                    <input type="radio" name="delivery" value="pickup" checked={customer.delivery === "pickup"} onChange={(e) => update("delivery", e.target.value)} />
-                    Pick up at store
-                  </label>
-                  <label className={`checkout-radio ${customer.delivery === "delivery" ? "active" : ""}`}>
-                    <input type="radio" name="delivery" value="delivery" checked={customer.delivery === "delivery"} onChange={(e) => update("delivery", e.target.value)} />
-                    Home delivery
-                  </label>
-                </div>
-                {customer.delivery === "delivery" ? (
-                  <>
-                    <input className={`checkout-input${submitted && errors.address ? " error" : ""}`} type="text" placeholder="Street, city, zip code" value={customer.address} onChange={(e) => update("address", e.target.value)} onBlur={() => blur("address")} />
-                    {submitted && errors.address && <span className="cerror">{errors.address}</span>}
-                  </>
-                ) : (
-                  <p className="checkout-store-address">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "0.3rem", verticalAlign: "middle" }}>
-                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                      <circle cx="12" cy="10" r="3" />
-                    </svg>
-                    {storeConfig.location}
-                  </p>
+            <>
+              <div className="cart-order-summary">
+                <button className="cart-summary-toggle" onClick={() => setShowSummary(!showSummary)}>
+                  <span>Your items ({cartItems.length})</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={`summary-chevron${showSummary ? " open" : ""}`}>
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </button>
+                {showSummary && (
+                  <div className="cart-summary-items">
+                    {cartItems.map((item) => (
+                      <div className="cart-summary-item" key={item.id}>
+                        <div className="cart-summary-item-img">
+                          <SafeImage src={item.image} alt={item.name} width={44} height={44} />
+                        </div>
+                        <div className="cart-summary-item-info">
+                          <span className="cart-summary-item-name">{item.name}</span>
+                          <span className="cart-summary-item-qty">{item.quantity}x ${item.priceUSD.toFixed(2)}</span>
+                        </div>
+                        <span className="cart-summary-item-total">${(item.priceUSD * item.quantity).toFixed(2)}</span>
+                      </div>
+                    ))}
+                    <div className="cart-summary-total">
+                      <span>Total</span>
+                      <span>${totalUSD.toFixed(2)}</span>
+                    </div>
+                  </div>
                 )}
               </div>
-              <div className="checkout-field">
-                <label className="checkout-label">Payment method *</label>
-                <div className="checkout-payment-grid">
-                  {PAYMENT_OPTIONS.map((opt) => (
-                    <label key={opt} className={`checkout-payment-chip ${customer.payment === opt ? "active" : ""}`}>
-                      <input type="radio" name="payment" value={opt} checked={customer.payment === opt} onChange={(e) => { update("payment", e.target.value); blur("payment"); }} />
-                      {opt}
+
+              <div className="cart-checkout-form">
+                <div className="checkout-field">
+                  <label className="checkout-label">Name *</label>
+                  <input className={`checkout-input${submitted && errors.name ? " error" : ""}`} type="text" placeholder="Enter your full name" value={customer.name} onChange={(e) => update("name", e.target.value)} onBlur={() => blur("name")} />
+                  {submitted && errors.name && <span className="cerror">{errors.name}</span>}
+                </div>
+                <div className="checkout-field">
+                  <label className="checkout-label">Phone *</label>
+                  <input className={`checkout-input${submitted && errors.phone ? " error" : ""}`} type="tel" placeholder="e.g. +1 555 123 4567" value={customer.phone} onChange={(e) => update("phone", e.target.value)} onBlur={() => blur("phone")} />
+                  {submitted && errors.phone && <span className="cerror">{errors.phone}</span>}
+                </div>
+                <div className="checkout-field">
+                  <label className="checkout-label">Pickup / Delivery *</label>
+                  <div className="checkout-radio-group">
+                    <label className={`checkout-radio ${customer.delivery === "pickup" ? "active" : ""}`}>
+                      <input type="radio" name="delivery" value="pickup" checked={customer.delivery === "pickup"} onChange={(e) => update("delivery", e.target.value)} />
+                      Pick up at store
                     </label>
-                  ))}
+                    <label className={`checkout-radio ${customer.delivery === "delivery" ? "active" : ""}`}>
+                      <input type="radio" name="delivery" value="delivery" checked={customer.delivery === "delivery"} onChange={(e) => update("delivery", e.target.value)} />
+                      Home delivery
+                    </label>
+                  </div>
+                  {customer.delivery === "delivery" ? (
+                    <>
+                      <input className={`checkout-input${submitted && errors.address ? " error" : ""}`} type="text" placeholder="Street, city, zip code" value={customer.address} onChange={(e) => update("address", e.target.value)} onBlur={() => blur("address")} />
+                      {submitted && errors.address && <span className="cerror">{errors.address}</span>}
+                    </>
+                  ) : (
+                    <p className="checkout-store-address">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "0.3rem", verticalAlign: "middle" }}>
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                        <circle cx="12" cy="10" r="3" />
+                      </svg>
+                      {storeConfig.location}
+                    </p>
+                  )}
                 </div>
-                {submitted && errors.payment && <span className="cerror">{errors.payment}</span>}
-                {customer.payment === "Other" && (
-                  <>
-                    <input className={`checkout-input${submitted && errors.paymentOther ? " error" : ""}`} type="text" placeholder="Describe your payment method" value={customer.paymentOther} onChange={(e) => update("paymentOther", e.target.value)} onBlur={() => blur("paymentOther")} style={{ marginTop: "0.5rem" }} />
-                    {submitted && errors.paymentOther && <span className="cerror">{errors.paymentOther}</span>}
-                  </>
-                )}
+                <div className="checkout-field">
+                  <label className="checkout-label">Payment method *</label>
+                  <div className="checkout-payment-grid">
+                    {PAYMENT_OPTIONS.map((opt) => (
+                      <label key={opt} className={`checkout-payment-chip ${customer.payment === opt ? "active" : ""}`}>
+                        <input type="radio" name="payment" value={opt} checked={customer.payment === opt} onChange={(e) => { update("payment", e.target.value); blur("payment"); }} />
+                        {opt}
+                      </label>
+                    ))}
+                  </div>
+                  {submitted && errors.payment && <span className="cerror">{errors.payment}</span>}
+                  {customer.payment === "Other" && (
+                    <>
+                      <input className={`checkout-input${submitted && errors.paymentOther ? " error" : ""}`} type="text" placeholder="Describe your payment method" value={customer.paymentOther} onChange={(e) => update("paymentOther", e.target.value)} onBlur={() => blur("paymentOther")} style={{ marginTop: "0.5rem" }} />
+                      {submitted && errors.paymentOther && <span className="cerror">{errors.paymentOther}</span>}
+                    </>
+                  )}
+                </div>
               </div>
-            </div>
+            </>
+          )}
+          </div>
           )}
         </div>
 
@@ -364,15 +395,12 @@ export default function Cart({ cartItems, onUpdateQty, onRemoveItem, onClearCart
 
         {!confirmed && cartItems.length > 0 && step === 1 && (
           <div className="cart-footer">
-            <div className="cart-summary-row">
-              <span className="cart-total-label">Total</span>
-              <span className="cart-total-primary">${totalUSD.toFixed(2)}</span>
-            </div>
             <button className="btn-checkout" onClick={() => setStep(2)}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="9 18 15 12 9 6" />
               </svg>
-              Continue
+              <span>Continue</span>
+              <span className="btn-checkout-total">${totalUSD.toFixed(2)}</span>
             </button>
           </div>
         )}
@@ -526,52 +554,141 @@ export default function Cart({ cartItems, onUpdateQty, onRemoveItem, onClearCart
           gap: 0.5rem;
         }
 
-        .btn-back-step {
-          background: none;
-          border: none;
-          color: var(--text-secondary);
-          cursor: pointer;
-          padding: 0.25rem;
+        .cart-step-pill {
           display: flex;
-          align-items: center;
-          transition: color 0.2s;
+          background: var(--bg-secondary);
+          border-radius: 18px;
+          padding: 2px;
+          gap: 2px;
         }
 
-        .btn-back-step:hover {
+        .pill-btn {
+          background: transparent;
+          border: none;
+          padding: 0.3rem 0.75rem;
+          border-radius: 16px;
+          font-size: 0.78rem;
+          font-weight: 600;
+          color: var(--text-secondary);
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .pill-btn.active {
+          background: var(--bg-primary);
+          color: var(--text-primary);
+          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .pill-btn:hover:not(.active) {
           color: var(--text-primary);
         }
 
-        .cart-step-indicator {
+        .cart-step-animated {
+          animation: cart-fade-in 0.25s ease;
+        }
+
+        @keyframes cart-fade-in {
+          from { opacity: 0; transform: translateX(16px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+
+        .cart-order-summary {
+          border: 1px solid var(--border-color);
+          border-radius: var(--radius-md);
+          overflow: hidden;
+        }
+
+        .cart-summary-toggle {
+          width: 100%;
           display: flex;
           align-items: center;
-          justify-content: center;
-          gap: 0.4rem;
-          margin: 0.75rem 0 0.5rem;
+          justify-content: space-between;
+          padding: 0.75rem 1rem;
+          background: var(--bg-secondary);
+          border: none;
+          color: var(--text-primary);
+          font-size: 0.85rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: background 0.2s;
         }
 
-        .cart-step-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
+        .cart-summary-toggle:hover {
           background: var(--border-color);
-          transition: all 0.3s;
         }
 
-        .cart-step-dot.active {
-          background: var(--text-primary);
-          width: 10px;
-          height: 10px;
+        .summary-chevron {
+          transition: transform 0.25s ease;
         }
 
-        .cart-step-dot.done {
-          background: var(--accent-green);
+        .summary-chevron.open {
+          transform: rotate(180deg);
         }
 
-        .cart-step-line {
-          width: 2rem;
-          height: 2px;
-          background: var(--border-color);
-          border-radius: 1px;
+        .cart-summary-items {
+          padding: 0.5rem 1rem 0.75rem;
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+
+        .cart-summary-item {
+          display: flex;
+          align-items: center;
+          gap: 0.65rem;
+          font-size: 0.8rem;
+        }
+
+        .cart-summary-item-img {
+          width: 44px;
+          height: 44px;
+          border-radius: var(--radius-sm);
+          overflow: hidden;
+          flex-shrink: 0;
+          background: var(--bg-secondary);
+        }
+
+        .cart-summary-item-img img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .cart-summary-item-info {
+          flex: 1;
+          min-width: 0;
+        }
+
+        .cart-summary-item-name {
+          display: block;
+          color: var(--text-primary);
+          font-weight: 600;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .cart-summary-item-qty {
+          display: block;
+          color: var(--text-secondary);
+          font-size: 0.75rem;
+        }
+
+        .cart-summary-item-total {
+          font-weight: 600;
+          color: var(--text-primary);
+          white-space: nowrap;
+        }
+
+        .cart-summary-total {
+          display: flex;
+          justify-content: space-between;
+          padding-top: 0.5rem;
+          border-top: 1px solid var(--border-color);
+          font-weight: 700;
+          font-size: 0.85rem;
+          color: var(--text-primary);
         }
 
         .cart-checkout-form {

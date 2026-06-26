@@ -423,6 +423,7 @@ File: `content/store-config.json`
 | `currency.symbol` | string | Yes      | Currency symbol (e.g., `"$"`, `"€"`). Displayed before prices.                                                                                |
 | `promoBanners`    | array  | No       | Array of up to 3 image paths for the hero promotional grid. See Promotional Images section above.                                             |
 | `promoLinks`      | array  | No       | Array of up to 3 promo link configs, one per promo banner. Controls what happens when each banner is tapped.                                  |
+| `donationUrl`     | string | No       | Optional URL for a donation/support link (e.g., Buy Me a Coffee, PayPal, Ko-fi). When set, shows a "Support this template" button in the Store Info modal. |
 
 ### Fallback Values
 
@@ -554,7 +555,7 @@ All colors are defined as CSS custom properties in `app/globals.css`. The design
 | `--text-secondary` | `#667781`                            | Secondary/label text                        |
 | `--accent-green`   | `#00a884`                            | WhatsApp brand green (primary action)       |
 | `--accent-green2`  | `#25d366`                            | WhatsApp vibrant green (badges, highlights) |
-| `--accent-light`   | `#d9fdd3`                            | Light green tint (cart footer background)   |
+| `--accent-light`   | `#d9fdd3`                            | Light green tint (active chip background)   |
 | `--accent-hover`   | `#06cf9c`                            | Hover state for green elements              |
 | `--border-color`   | `#e9edef`                            | Borders and dividers                        |
 | `--glass-bg`       | `rgba(255, 255, 255, 0.9)`           | Glassmorphism header background             |
@@ -624,7 +625,7 @@ The project uses a local font stack (no Google Fonts dependency) inspired by Wha
 | `.featured-title`        | `--font-sans`  | 1.5rem                    | 700             |
 | `.category-title-header` | `--font-sans`  | 1.5rem                    | 700             |
 | `.cart-header h2`        | `--font-sans`  | 1.4rem                    | 700             |
-| `.cart-total-primary`    | `--font-sans`  | 1.4rem                    | 700             |
+
 | `.store-info-title`      | `--font-sans`  | 1.6rem                    | 700             |
 | `.product-modal-title`   | `--font-serif` | 1.8rem                    | 700             |
 | `.cart-checkout-title`   | `--font-serif` | 1rem                      | 600             |
@@ -775,7 +776,11 @@ The cart is managed entirely on the client side in `CatalogContainer.jsx`:
 2. **Persistence:** Cart is saved to `localStorage` under the key `whatalog_cart` on every change. It survives page reloads.
 3. **Adding:** Clicking "+" on a product card or "Add to Cart" in the modal adds/updates the item. A green toast notification appears for 2.7 seconds.
 4. **Updating:** In the cart drawer, +/- buttons change quantity. If quantity reaches 0, the item is removed.
-5. **Removing:** The trash icon removes the item entirely. A toast confirms the removal.
+5. **Removing:** The trash icon removes the item and shows a toast with an **Undo** button. You have 4 seconds to bring it back — after that, the removal is permanent.
+6. **Editing:** Tap any product image or name inside the cart to open the ProductModal with that item. Change variants, options, or quantity and re-add it — the old version is replaced automatically.
+7. **Steps:** The cart has two steps — **Cart** (review items) and **Details** (checkout form). Switch between them using the pill tabs in the header. A fade-slide animation makes the transition feel smooth.
+8. **Order summary:** On the Details step, a collapsible "Your items (N)" accordion shows everything you're about to buy — images, quantities, and per-item totals. Handy for a last check before confirming.
+9. **Total:** The grand total lives inside the **Continue** button, so you always see the amount before moving forward.
 
 ### Cart Reset
 

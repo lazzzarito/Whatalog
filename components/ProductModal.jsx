@@ -440,6 +440,7 @@ export default function ProductModal({ product, onClose, onAddToCart, storeConfi
           scroll-behavior: smooth;
           scrollbar-width: none;
           -ms-overflow-style: none;
+          padding-bottom: 80px;
         }
 
         .product-modal-scroll-content::-webkit-scrollbar { display: none; }
@@ -701,12 +702,16 @@ export default function ProductModal({ product, onClose, onAddToCart, storeConfi
         .product-modal-details-html li { list-style-type: disc; }
 
         .product-modal-footer {
-          padding: 1rem 1.5rem calc(1rem + env(safe-area-inset-bottom, 0px));
-          border-top: 1px solid var(--border-color);
-          background: var(--bg-primary);
-          flex-shrink: 0;
-          position: relative;
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          padding: 0.5rem 1.5rem calc(0.5rem + env(safe-area-inset-bottom, 0px));
+          background: transparent;
           z-index: 5;
+          box-shadow: 0 -4px 12px rgba(0,0,0,0.04);
+          backdrop-filter: blur(6px);
+          -webkit-backdrop-filter: blur(6px);
         }
 
         .product-modal-footer-row {
