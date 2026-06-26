@@ -259,6 +259,9 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
       if (sortBy === "name-asc") {
         return a.name.localeCompare(b.name);
       }
+      if (sortBy === "name-desc") {
+        return b.name.localeCompare(a.name);
+      }
       return 0;
     });
   }, [initialProducts, activeCategory, searchQuery, sortBy]);
@@ -431,6 +434,8 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
         storeConfig={storeConfig}
         favoriteCount={favoriteIds.length}
         onOpenFavorites={() => setShowFavorites(true)}
+        productCount={sortedProducts.length}
+        totalCount={initialProducts.length}
       />
 
       {toast && (
@@ -490,6 +495,7 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
                   <line x1="12" y1="5" x2="12" y2="19"></line>
                   <line x1="5" y1="12" x2="19" y2="12"></line>
                 </svg>
+                <span className="btn-expand-label">See all</span>
               </button>
             </h2>
             <MasonryGrid key="offers">
@@ -523,6 +529,7 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
                 <line x1="4" y1="12" x2="16" y2="12"></line>
                 <line x1="4" y1="18" x2="12" y2="18"></line>
               </svg>
+              <span className="btn-expand-label">Filters</span>
             </button>
           </h2>
           {visibleProducts.length > 0 ? (
@@ -634,6 +641,8 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
         onClose={() => setSelectedPromo(null)}
         onAddToCart={handleAddToCart}
         onOpenDetails={setSelectedProduct}
+        favoriteIds={favoriteIds}
+        onToggleFavorite={toggleFavorite}
       />
 
       {showOffers && (
@@ -642,6 +651,8 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
           onClose={() => setShowOffers(false)}
           onAddToCart={handleAddToCart}
           onOpenDetails={setSelectedProduct}
+          favoriteIds={favoriteIds}
+          onToggleFavorite={toggleFavorite}
         />
       )}
 
@@ -728,16 +739,19 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
           color: var(--accent-green);
-          width: 26px;
-          height: 26px;
-          border-radius: 50%;
           cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
+          gap: 0.25rem;
           flex-shrink: 0;
           transition: all 0.2s;
           margin-left: auto;
+          padding: 0.25rem 0.6rem;
+          border-radius: 15px;
+          font-size: 0.7rem;
+          font-weight: 600;
+          font-family: var(--font-sans);
         }
 
         .btn-offers-expand:hover {
@@ -751,15 +765,18 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
           color: var(--text-secondary);
-          width: 26px;
-          height: 26px;
-          border-radius: 50%;
           cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
+          gap: 0.25rem;
           flex-shrink: 0;
           transition: all 0.2s;
+          padding: 0.25rem 0.6rem;
+          border-radius: 15px;
+          font-size: 0.7rem;
+          font-weight: 600;
+          font-family: var(--font-sans);
         }
 
         .btn-filter-catalog:hover {
@@ -832,7 +849,13 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
             </div>
           </div>
           <div className="footer-store-grid">
-            <div className="store-info-item">
+            <a
+              href={storeConfig.googleMapsUrl || `https://www.google.com/maps/search/${encodeURIComponent(storeConfig.location || "")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="store-info-item"
+              style={{ cursor: "pointer", textDecoration: "none", color: "inherit", display: "flex" }}
+            >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" />
               </svg>
@@ -840,8 +863,14 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
                 <strong>Location</strong>
                 <p>{storeConfig.location}</p>
               </div>
-            </div>
-            <div className="store-info-item">
+            </a>
+            <a
+              href={`https://wa.me/${storeConfig.whatsappNumber.replace(/[^0-9+]/g, "")}?text=${encodeURIComponent("Hi, I have a question about your products")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="store-info-item"
+              style={{ cursor: "pointer", textDecoration: "none", color: "inherit", display: "flex" }}
+            >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
               </svg>
@@ -849,8 +878,14 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
                 <strong>WhatsApp</strong>
                 <p>{storeConfig.whatsappNumber}</p>
               </div>
-            </div>
-            <div className="store-info-item">
+            </a>
+            <a
+              href={`https://wa.me/${storeConfig.whatsappNumber.replace(/[^0-9+]/g, "")}?text=${encodeURIComponent("Hi, I'd like to know your business hours")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="store-info-item"
+              style={{ cursor: "pointer", textDecoration: "none", color: "inherit", display: "flex" }}
+            >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
               </svg>
@@ -858,8 +893,14 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
                 <strong>Hours</strong>
                 <p>Monday - Saturday, 9:00 AM – 6:00 PM</p>
               </div>
-            </div>
-            <div className="store-info-item">
+            </a>
+            <a
+              href={`https://wa.me/${storeConfig.whatsappNumber.replace(/[^0-9+]/g, "")}?text=${encodeURIComponent("Hi, I need information about deliveries")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="store-info-item"
+              style={{ cursor: "pointer", textDecoration: "none", color: "inherit", display: "flex" }}
+            >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="1" y="3" width="15" height="13" /><polygon points="16 8 20 8 23 11 23 16 16 16 16 8" /><circle cx="5.5" cy="18.5" r="2.5" /><circle cx="18.5" cy="18.5" r="2.5" />
               </svg>
@@ -867,7 +908,7 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
                 <strong>Deliveries</strong>
                 <p>Coordinated shipping in Miami area</p>
               </div>
-            </div>
+            </a>
             <div className="store-info-item" style={{ cursor: "pointer" }} onClick={() => window.dispatchEvent(new CustomEvent("open-legal-modal"))}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" />

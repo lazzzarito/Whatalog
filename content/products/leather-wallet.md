@@ -10,6 +10,7 @@ images:
 description: "Sleek and slim vegetable-tanned leather wallet designed to carry your daily cards and bills."
 featured: false
 offer: false
+promo: "leather-essentials"
 options:
   Color:
     - name: "Tan"

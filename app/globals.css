@@ -273,6 +273,46 @@ body {
   }
 }
 
+.store-info-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.store-info-section:not(:last-child) {
+  margin-bottom: 1.25rem;
+}
+
+.store-info-section > strong {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+
+.btn-clear-filters {
+  width: 100%;
+  padding: 0.6rem;
+  border-radius: 30px;
+  border: 1px solid #e74c3c;
+  background: transparent;
+  color: #e74c3c;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  transition: all 0.2s;
+  margin-top: 0.5rem;
+}
+
+.btn-clear-filters:hover {
+  background: #e74c3c;
+  color: #fff;
+}
+
 .brand-logo-image {
   width: 100%;
   height: 100%;
@@ -1913,118 +1953,6 @@ body {
   background: var(--bg-secondary);
   color: var(--text-primary);
   border-color: var(--accent-green);
-}
-
-/* ===== Template Info Modal ===== */
-/* ===== Promo Modal ===== */
-.promo-modal-banner {
-  width: 100%;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  background: var(--bg-secondary);
-  display: flex;
-  justify-content: center;
-}
-
-.promo-modal-banner-img {
-  width: 100%;
-  height: auto;
-   max-height: 45dvh;
-  object-fit: contain;
-  display: block;
-}
-
-.promo-modal-banner + .store-info-header {
-  margin-top: 1rem;
-}
-
-.promo-modal-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.promo-modal-product {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-  padding: 0.75rem;
-  background: var(--bg-secondary);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.promo-modal-product:hover {
-  background: var(--border-color);
-}
-
-.promo-modal-image-wrapper {
-  width: 60px;
-  height: 60px;
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-  flex-shrink: 0;
-  background: var(--bg-primary);
-}
-
-.promo-modal-image {
-  object-fit: cover;
-  width: 100%;
-  height: 100%;
-}
-
-.promo-modal-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  min-width: 0;
-}
-
-.promo-modal-category {
-  font-size: 0.7rem;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.promo-modal-name {
-  font-size: 0.85rem;
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.promo-modal-price {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--accent-green);
-}
-
-.promo-modal-add {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  border: none;
-  background: var(--accent-green);
-  color: #fff;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: background 0.2s, transform 0.15s;
-}
-
-.promo-modal-add:hover {
-  background: var(--accent-hover);
-  transform: scale(1.05);
-}
-
-.promo-modal-add:active {
-  transform: scale(0.95);
 }
 
 /* ===== Product Modal (inherited) ===== */

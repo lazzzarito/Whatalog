@@ -39,10 +39,11 @@ whatalog/
 │   ├── FilterHeader.jsx                     → Header, search, categories, filters, store info modal
 │   ├── LegalInfoModal.jsx                   → Legal / cookies popup
 │   ├── MasonryGrid.jsx                      → CSS multi-column masonry wrapper
-│   ├── OfferModal.jsx                       → Flash Offers expanded popup (all offer products)
+│   ├── OfferModal.jsx                       → Flash Offers popup (all offer products in masonry grid)
 │   ├── Preloader.jsx                        → Loading spinner shown on first render
-│   ├── ProductCard.jsx                      → Product card with image, price, add-to-cart
+│   ├── ProductCard.jsx                      → Product card with image, price, add-to-cart, favorite toggle
 │   ├── ProductModal.jsx                     → Product detail modal with gallery, attributes, sharing
+│   ├── PromoModal.jsx                       → Promo products popup (masonry grid, no banner)
 │   ├── QuickBuyModal.jsx                    → Direct buy / quick checkout form
 │   ├── Skeleton.jsx                         → Shimmer skeleton loader
 │   └── CustomerInfoModal.jsx                → Onboarding form (name, phone, delivery, payment)
@@ -668,6 +669,7 @@ Below is every user-facing string in Whatalog, where it lives, and its default E
 | `"Price: Low to High"` | Sort option                        |
 | `"Price: High to Low"` | Sort option                        |
 | `"Name: A-Z"`          | Sort option                        |
+| `"Name: Z-A"`          | Sort option                        |
 
 ### Store Info Modal (`components/FilterHeader.jsx`)
 
@@ -740,7 +742,9 @@ Below is every user-facing string in Whatalog, where it lives, and its default E
 | `"Available Products"`                             | Section heading                   |
 | `"No products found"`                              | Empty results title               |
 | `"Try different search terms or change category."` | Empty results hint                |
-| `"Clear Filters"`                                  | Reset button                      |
+| `"Clear filters"`                                  | Reset button in filter popup      |
+| `"See all"`                                        | Flash Offers expand button        |
+| `"Filters"`                                        | Filter popup trigger button       |
 | `"Added: {name}"`                                  | Toast notification (cart add)     |
 | `"Quantity updated"`                               | Toast notification (cart update)  |
 | `"Removed: {name}"`                                | Toast notification (cart remove)  |
@@ -778,7 +782,7 @@ The cart is managed entirely on the client side in `CatalogContainer.jsx`:
 4. **Updating:** In the cart drawer, +/- buttons change quantity. If quantity reaches 0, the item is removed.
 5. **Removing:** The trash icon removes the item and shows a toast with an **Undo** button. You have 4 seconds to bring it back — after that, the removal is permanent.
 6. **Editing:** Tap any product image or name inside the cart to open the ProductModal with that item. Change variants, options, or quantity and re-add it — the old version is replaced automatically.
-7. **Steps:** The cart has two steps — **Cart** (review items) and **Details** (checkout form). Switch between them using the pill tabs in the header. A fade-slide animation makes the transition feel smooth.
+7. **Steps:** The cart has two steps — **Cart** (review items) and **Details** (checkout form). Switch between them using the pill tabs in the header (hidden when cart is empty). A fade-slide animation makes the transition feel smooth.
 8. **Order summary:** On the Details step, a collapsible "Your items (N)" accordion shows everything you're about to buy — images, quantities, and per-item totals. Handy for a last check before confirming.
 9. **Total:** The grand total lives inside the **Continue** button, so you always see the amount before moving forward.
 
@@ -977,14 +981,14 @@ offer: true
 When `offer: true` AND `originalPrice` is set and greater than `priceUSD`:
 - The product appears in the "Flash Offers" featured section at the top of the catalog (right below the promo grid).
 - The first 24 offer products are shown in a CSS multi-column masonry grid (same as the main catalog, **not** a forced square grid).
-- A **+ button** (circular, green, at the end of the title row) opens an `OfferModal` popup showing ALL offer products in a `<MasonryGrid>` with natural aspect ratios.
+- A **See all pill button** (icon + "See all" label, at the end of the title row) opens an `OfferModal` popup showing ALL offer products in a `<MasonryGrid>` — same layout as favorites, with heart/favorite toggle on each card.
 - Products without `originalPrice > priceUSD` are excluded even if `offer: true`.
 
 The title row layout:
 ```
-Flash Offers ────────────────────── [+]
+Flash Offers ────────────────────── [See all]
 ```
-The separator line is an explicit `<span className="featured-title-line">`, and the + button is pushed to the far right with `margin-left: auto`.
+The separator line is an explicit `<span className="featured-title-line">`, and the See all button is pushed to the far right with `margin-left: auto`. The button changed from a small circle to a pill shape (`.btn-offers-expand`) to fit both the icon and the label.
 
 The filtering logic in `CatalogContainer.jsx`:
 ```js
@@ -1065,7 +1069,7 @@ const categories = Array.from(new Set(initialProducts.map((p) => p.category)));
 1. **Filter pills:** Each unique category becomes a button in the header's horizontal scrollable nav. The first button is always "All" (shows all products).
 2. **Filtering:** Clicking a category pill filters the product grid to only show products with that category. The filter is applied client-side in `CatalogContainer.jsx`.
 3. **Auto-scroll:** When a category is selected, the catalog section scrolls into view smoothly.
-4. **Available Products title:** Includes a circular filter icon button (`.btn-filter-catalog`, 50% border-radius) at the far right of the title row that opens the sort/filter popup.
+4. **Available Products title:** Includes a pill-shaped filter button (`.btn-filter-catalog`, icon + "Filters" text) at the far right of the title row that opens the sort/filter popup. The popup stays open while selecting categories and sort options, shows a product count ("X of Y products"), and includes a "Clear filters" button when filters are active.
 
 ### Renaming a Category
 
@@ -1134,8 +1138,8 @@ Nested popup preservation:
 | --------- | ---- | ------------ | ----- ||
 | ProductModal      | `components/ProductModal.jsx`      | Product card tap, promo product tap                                      | Slides up, z-index 210; quantity stepper + stock/status UI                             |
 | QuickBuyModal     | `components/QuickBuyModal.jsx`     | "Buy" button in ProductModal                                             | Stays on top of ProductModal; inline qty stepper synced with ProductModal              |
-| PromoModal        | `components/PromoModal.jsx`        | Promo banner tap                                                         | Shows related products (promo field match)                                             |
-| OfferModal        | `components/OfferModal.jsx`        | + button in Flash Offers title                                           | Shows all offer products in MasonryGrid                                                |
+| PromoModal        | `components/PromoModal.jsx`        | Promo banner tap                                                         | Shows related products (promo field match) in a MasonryGrid with ProductCards — includes favorite toggle. No banner image inside the modal.                           |
+| OfferModal        | `components/OfferModal.jsx`        | See all button in Flash Offers title                                    | Shows all offer products in a MasonryGrid with ProductCards — same card layout as favorites, with heart/favorite toggle.                                            |
 | Store Info        | Inside `FilterHeader.jsx`          | Info icon, footer "Store Info" button                                    | Opens via custom event `open-store-info`                                               |
 | Sort / Filter     | Inside `FilterHeader.jsx`          | Filter icon, title filter button                                         | Opens via custom event `open-sort-menu`                                                |
 | TemplateInfoModal | `components/CustomerInfoModal.jsx` | Auto on first visit (no delay) if no `whatalog_customer` in localStorage | Shows onboarding form; saves to localStorage on confirm                                |
@@ -1192,11 +1196,11 @@ The footer is structured in two main cards:
 
 Displays store identity and key information:
 - **Header row**: Circular store logo (32×32) + store name + "Online Catalog" badge — social links (GitHub, Instagram, Facebook, WhatsApp as SVG icons) at the end of the row (same line on desktop, new line on mobile).
-- **Info grid**: A 3-column grid with icon-labeled entries:
-  - **Location** — `storeConfig.location`
-  - **WhatsApp** — WhatsApp number link
-  - **Hours** — "Monday - Saturday, 9:00 AM – 6:00 PM"
-  - **Deliveries** — "Coordinated shipping in Miami area"
+- **Info grid**: A 3-column grid with icon-labeled entries — each is a clickable link:
+  - **Location** — opens `storeConfig.googleMapsUrl` in Google Maps (`target="_blank"`)
+  - **WhatsApp** — opens WhatsApp with a pre-filled message "Hi, I have a question about your products"
+  - **Hours** — opens WhatsApp with "Hi, I'd like to know your business hours"
+  - **Deliveries** — opens WhatsApp with "Hi, I need information about deliveries"
   - **Store Info** — button that dispatches `open-store-info`
   - **Legal Info** — button that dispatches `open-legal-modal`
 

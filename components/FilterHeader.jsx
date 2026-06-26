@@ -17,6 +17,8 @@ export default function FilterHeader({
   storeConfig,
   favoriteCount = 0,
   onOpenFavorites,
+  productCount,
+  totalCount,
 }) {
   // ── Refs & UI state ──
   const navRef = useRef(null);
@@ -236,7 +238,11 @@ export default function FilterHeader({
             <div className="store-info-header">
               <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
                 <h2 className="store-info-title">Filters</h2>
-                <span className="store-info-badge">Adjust your search</span>
+                <span className="store-info-badge">
+                  {productCount !== undefined && totalCount !== undefined
+                    ? `${productCount} of ${totalCount} products`
+                    : "Adjust your search"}
+                </span>
               </div>
             </div>
 
@@ -246,10 +252,7 @@ export default function FilterHeader({
                 <div className="sort-modal-categories-scroll">
                   <button
                     className={`sort-category-pill ${activeCategory === "all" ? "active" : ""}`}
-                    onClick={() => {
-                      onCategoryChange("all");
-                      setShowSortMenu(false);
-                    }}
+                    onClick={() => onCategoryChange("all")}
                   >
                     All
                   </button>
@@ -257,10 +260,7 @@ export default function FilterHeader({
                     <button
                       key={category}
                       className={`sort-category-pill ${activeCategory === category ? "active" : ""}`}
-                      onClick={() => {
-                        onCategoryChange(category);
-                        setShowSortMenu(false);
-                      }}
+                      onClick={() => onCategoryChange(category)}
                     >
                       {category}
                     </button>
@@ -274,45 +274,56 @@ export default function FilterHeader({
                   <button
                     type="button"
                     className={`sort-dropdown-option ${sortBy === "featured" ? "active" : ""}`}
-                    onClick={() => {
-                      onSortChange("featured");
-                      setShowSortMenu(false);
-                    }}
+                    onClick={() => onSortChange("featured")}
                   >
                     Featured First
                   </button>
                   <button
                     type="button"
                     className={`sort-dropdown-option ${sortBy === "price-asc" ? "active" : ""}`}
-                    onClick={() => {
-                      onSortChange("price-asc");
-                      setShowSortMenu(false);
-                    }}
+                    onClick={() => onSortChange("price-asc")}
                   >
                     Price: Low to High
                   </button>
                   <button
                     type="button"
                     className={`sort-dropdown-option ${sortBy === "price-desc" ? "active" : ""}`}
-                    onClick={() => {
-                      onSortChange("price-desc");
-                      setShowSortMenu(false);
-                    }}
+                    onClick={() => onSortChange("price-desc")}
                   >
                     Price: High to Low
                   </button>
                   <button
                     type="button"
                     className={`sort-dropdown-option ${sortBy === "name-asc" ? "active" : ""}`}
-                    onClick={() => {
-                      onSortChange("name-asc");
-                      setShowSortMenu(false);
-                    }}
+                    onClick={() => onSortChange("name-asc")}
                   >
                     Name: A-Z
                   </button>
+                  <button
+                    type="button"
+                    className={`sort-dropdown-option ${sortBy === "name-desc" ? "active" : ""}`}
+                    onClick={() => onSortChange("name-desc")}
+                  >
+                    Name: Z-A
+                  </button>
                 </div>
               </div>
+
+              {(activeCategory !== "all" || sortBy !== "featured") && (
+                <button
+                  className="btn-clear-filters"
+                  onClick={() => {
+                    onCategoryChange("all");
+                    onSortChange("featured");
+                  }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                  Clear filters
+                </button>
+              )}
             </div>
           </div>
         </div>

@@ -66,13 +66,13 @@ Whatalog is open source under the MIT license. You can use it, modify it, and di
 
 ## Screenshots
 
-<div style="display: flex; justify-content: center; gap: 5px;">
-  <img src="public/images/mobile_view.webp" alt="Mobile catalog" width="45%" style="border-radius: 15px;">
-  <img src="public/images/product_view.webp" alt="Product view" width="45%" style="border-radius: 15px;">
-  <img src="public/images/cart_view.webp" alt="Cart view" width="45%" style="border-radius: 15px;">
-  <img src="public/images/favs_view.webp" alt="Favorites view" width="45%" style="border-radius: 15px;">
-  <img src="public/images/quickbuy_view.webp" alt="Quick Buy view" width="45%" style="border-radius: 15px;">
-  <img src="public/images/filters_view.webp" alt="Filters view" width="45%" style="border-radius: 15px;">
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; max-width: 800px; margin: 0 auto;">
+  <img src="public/images/mobile_view.webp" alt="Mobile catalog" style="width: 100%; border-radius: 15px;">
+  <img src="public/images/product_view.webp" alt="Product view" style="width: 100%; border-radius: 15px;">
+  <img src="public/images/cart_view.webp" alt="Cart view" style="width: 100%; border-radius: 15px;">
+  <img src="public/images/favs_view.webp" alt="Favorites view" style="width: 100%; border-radius: 15px;">
+  <img src="public/images/quickbuy_view.webp" alt="Quick Buy view" style="width: 100%; border-radius: 15px;">
+  <img src="public/images/filters_view.webp" alt="Filters view" style="width: 100%; border-radius: 15px;">
 </div>
 
 ---
