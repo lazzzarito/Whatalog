@@ -66,30 +66,29 @@ Whatalog is open source under the MIT license. You can use it, modify it, and di
 
 ## Screenshots
 
-<div style="display: flex; justify-content: center; gap: 8px;">
+<div style="display: flex; justify-content: center; gap: 5px;">
   <img src="public/images/mobile_view.webp" alt="Mobile catalog" width="45%" style="border-radius: 15px;">
   <img src="public/images/product_view.webp" alt="Product view" width="45%" style="border-radius: 15px;">
   <img src="public/images/cart_view.webp" alt="Cart view" width="45%" style="border-radius: 15px;">
 </div>
 
-
 ---
 
 ## Features
 
-| Feature                              | What it does                                                                                                                                         |
-| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Multi-format catalogs**      | Load products from Markdown (`.md`), Excel (`.xlsx`), CSV, or Google Sheets. All formats support variants and attributes.                        |
-| **CSS masonry grid**           | True Pinterest-style waterfall layout. Products look great at any aspect ratio — tall, square, or wide.                                             |
-| **Search & filters**           | Real-time search, category filtering, sort by price, name, or newest.                                                                                |
+| Feature                              | What it does                                                                                                                                                  |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Multi-format catalogs**      | Load products from Markdown (`.md`), Excel (`.xlsx`), CSV, or Google Sheets. All formats support variants and attributes.                                 |
+| **CSS masonry grid**           | True Pinterest-style waterfall layout. Products look great at any aspect ratio — tall, square, or wide.                                                      |
+| **Search & filters**           | Real-time search, category filtering, sort by price, name, or newest.                                                                                         |
 | **PWA support**                | Installable as an app on Android and iOS. Service worker for offline-ready caching. Add-to-home-screen with custom icons, splash screen, and standalone mode. |
-| **Smart cart**                 | Persists across sessions. Edit products from the cart, undo deletions with a 4-second timer, animated checkout steps with collapsible order summary. |
-| **WhatsApp checkout**          | One tap generates a complete, formatted order message with items, prices, and totals.                                                                |
-| **Popup navigation stack**     | Each popup tracks browser history. Tap back once per popup. Nested modals (Promo → Product → QuickBuy) stay properly stacked.                      |
-| **Flash Offers section**       | Products with discounts appear in a dedicated masonry grid. A + button opens all offers in a full popup.                                             |
-| **Dark mode**                  | Automatic based on system preference. Fully customizable via CSS variables.                                                                          |
-| **Promo groups**               | Group 2–4 products into promo modals that open from banner images.                                                                                  |
-| **Browser-native translation** | UI is in English; visitors use their browser's built-in translate to view it in any language.                                                        |
+| **Smart cart**                 | Persists across sessions. Edit products from the cart, undo deletions with a 4-second timer, animated checkout steps with collapsible order summary.          |
+| **WhatsApp checkout**          | One tap generates a complete, formatted order message with items, prices, and totals.                                                                         |
+| **Popup navigation stack**     | Each popup tracks browser history. Tap back once per popup. Nested modals (Promo → Product → QuickBuy) stay properly stacked.                               |
+| **Flash Offers section**       | Products with discounts appear in a dedicated masonry grid. A + button opens all offers in a full popup.                                                      |
+| **Dark mode**                  | Automatic based on system preference. Fully customizable via CSS variables.                                                                                   |
+| **Promo groups**               | Group 2–4 products into promo modals that open from banner images.                                                                                           |
+| **Browser-native translation** | UI is in English; visitors use their browser's built-in translate to view it in any language.                                                                 |
 
 ---
 
