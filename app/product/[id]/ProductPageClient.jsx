@@ -63,7 +63,7 @@ export default function ProductPageClient({ product, storeConfig }) {
   }, [product, qty, storeConfig.whatsappNumber, handleAddToCart]);
 
   const hasOptions = product.options && Object.keys(product.options).length > 0;
-  const hasDiscount = product.originalPrice && product.originalPrice > product.priceUSD;
+  const hasDiscount = product.originalPrice != null && product.originalPrice > product.priceUSD;
   const stock = product.stock;
   const isComingSoon = product.status === "coming-soon";
   const isOutOfStock = !isComingSoon && stock === 0;

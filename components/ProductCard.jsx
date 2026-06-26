@@ -6,7 +6,7 @@ import SafeImage from "@/components/SafeImage";
 
 export default function ProductCard({ product, onAddToCart, onOpenDetails, priority, isFavorited = false, onToggleFavorite, index = 0 }) {
   const { name, priceUSD, originalPrice, category, image, description, ratioClass } = product;
-  const hasDiscount = originalPrice && originalPrice > priceUSD;
+  const hasDiscount = originalPrice != null && originalPrice > priceUSD;
   const hasOptions = product.options && Object.keys(product.options).length > 0;
   const stock = product.stock;
   const productStatus = product.status;

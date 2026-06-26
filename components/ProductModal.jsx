@@ -83,7 +83,7 @@ export default function ProductModal({ product, onClose, onAddToCart, storeConfi
     });
   }
 
-  const hasDiscount = activeOriginalPrice && activeOriginalPrice > activePrice;
+  const hasDiscount = activeOriginalPrice != null && activeOriginalPrice > activePrice;
   const hasAttributes = attributes && Object.keys(attributes).length > 0;
 
   const handleOptionSelect = (optionKey, valName) => {
