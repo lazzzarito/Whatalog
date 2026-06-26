@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  Whatalog is a free, open-source Next.js template that turns Markdown files into a beautiful online store. Your customers browse, add to cart, and send the complete order as a formatted WhatsApp message — directly from your site. Zero servers, zero databases, zero cost.
+  Whatalog is a free, open-source Next.js template that turns Markdown files into a beautiful online store — installable as a PWA on any device. Your customers browse, add to cart, and send the complete order as a formatted WhatsApp message — directly from your site. Zero servers, zero databases, zero cost.
 </p>
 
 ---
@@ -30,9 +30,7 @@ Deploy anywhere Node.js runs — Vercel, Netlify, Railway, or your own VPS. No e
 ## Why Whatalog?
 
 <p align="center">
-  <img src="https://via.placeholder.com/375x812/1a1a2e/ffffff?text=Catalog" alt="Catalog view" width="30%" style="border-radius: 12px; margin: 4px;">
-  <img src="https://via.placeholder.com/375x812/1a1a2e/ffffff?text=Cart" alt="Cart view" width="30%" style="border-radius: 12px; margin: 4px;">
-  <img src="https://via.placeholder.com/375x812/1a1a2e/ffffff?text=Checkout" alt="Checkout view" width="30%" style="border-radius: 12px; margin: 4px;">
+  <img src="public/images/desktop_view.webp" alt="Desktop view" width="100%" style="border-radius: 15px; margin: 4px;">
 </p>
 
 ### Who is this for?
@@ -66,6 +64,17 @@ Whatalog is open source under the MIT license. You can use it, modify it, and di
 
 ---
 
+## Screenshots
+
+<div style="display: flex; justify-content: center; gap: 8px;">
+  <img src="public/images/mobile_view.webp" alt="Mobile catalog" width="45%" style="border-radius: 15px;">
+  <img src="public/images/product_view.webp" alt="Product view" width="45%" style="border-radius: 15px;">
+  <img src="public/images/cart_view.webp" alt="Cart view" width="45%" style="border-radius: 15px;">
+</div>
+
+
+---
+
 ## Features
 
 | Feature                              | What it does                                                                                                                                         |
@@ -73,6 +82,7 @@ Whatalog is open source under the MIT license. You can use it, modify it, and di
 | **Multi-format catalogs**      | Load products from Markdown (`.md`), Excel (`.xlsx`), CSV, or Google Sheets. All formats support variants and attributes.                        |
 | **CSS masonry grid**           | True Pinterest-style waterfall layout. Products look great at any aspect ratio — tall, square, or wide.                                             |
 | **Search & filters**           | Real-time search, category filtering, sort by price, name, or newest.                                                                                |
+| **PWA support**                | Installable as an app on Android and iOS. Service worker for offline-ready caching. Add-to-home-screen with custom icons, splash screen, and standalone mode. |
 | **Smart cart**                 | Persists across sessions. Edit products from the cart, undo deletions with a 4-second timer, animated checkout steps with collapsible order summary. |
 | **WhatsApp checkout**          | One tap generates a complete, formatted order message with items, prices, and totals.                                                                |
 | **Popup navigation stack**     | Each popup tracks browser history. Tap back once per popup. Nested modals (Promo → Product → QuickBuy) stay properly stacked.                      |
@@ -104,6 +114,4 @@ If Whatalog has helped you launch your store or saved you time, consider [buying
 ---
 
 <p align="center">
-  <strong>Built with Next.js, ☕, and ❤️‍🔥 by <a href="https://1azarito.vercel.app">1azarito</a></strong><br>
-  <em>From catalog to WhatsApp in one click.</em>
-</p>
+  <strong>Made with ❤️‍🔥 by <a href="https://1azarito.vercel.app">1azarito</a>

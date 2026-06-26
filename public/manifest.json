@@ -1,0 +1,21 @@
+{
+  "name": "Whatalog — Online WhatsApp Catalog",
+  "short_name": "Whatalog",
+  "description": "Browse products, add to cart, and order directly via WhatsApp.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#00a884",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

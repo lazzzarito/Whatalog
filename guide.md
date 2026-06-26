@@ -1547,6 +1547,49 @@ See the "Colors and Design System" section above for the full dark mode color va
 
 ---
 
+## PWA / Progressive Web App
+
+Whatalog works as an installable PWA. On Android, Chrome shows an "Add to Home Screen" prompt. On iOS, users can tap **Share → Add to Home Screen** from Safari. The app opens in standalone mode (no browser UI) with a custom splash screen.
+
+### What's included
+
+- **`public/manifest.json`** — defines app name, icons, theme color (`#00a884`), and standalone display mode.
+- **`public/sw.js`** — a service worker that caches assets for faster repeat visits and basic offline support.
+- **`public/icons/`** — PWA icons at 192×192 and 512×512, generated from the store logo.
+- **`app/layout.js`** — includes `manifest.json`, `theme-color`, `apple-touch-icon`, and Apple PWA meta tags.
+- **`components/Preloader.jsx`** — registers the service worker on the client side.
+
+### Customize
+
+To change the PWA appearance:
+
+1. **Theme color** — edit the `themeColor` value in the `viewport` export of `app/layout.js`. The default is `#00a884` (WhatsApp green).
+2. **App name** — edit `name` and `short_name` in `public/manifest.json`.
+3. **Icons** — replace the PNG files in `public/icons/` with your own. Minimum sizes: 192×192 and 512×512. To regenerate from the logo, run:
+
+```bash
+node -e "
+const sharp = require('sharp');
+sharp('public/images/logo.webp').resize(192, 192).png().toFile('public/icons/icon-192x192.png');
+sharp('public/images/logo.webp').resize(512, 512).png().toFile('public/icons/icon-512x512.png');
+"
+```
+
+4. **Service worker** — edit `public/sw.js` to change caching behavior. The current strategy is **network-first with cache fallback**: always try the network first, fall back to cache if offline.
+
+### Verify PWA
+
+Build the project and run it:
+
+```bash
+npm run build
+npm start
+```
+
+Then open Chrome DevTools → **Application** → **Manifest** and **Service Workers** to verify everything is registered correctly. On a mobile device (or Chrome DevTools mobile emulation), you should see the "Add to Home Screen" prompt.
+
+---
+
 ## Useful Commands
 
 ```bash

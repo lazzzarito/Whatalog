@@ -19,6 +19,12 @@ export default function Preloader({ children }) {
     return () => document.removeEventListener("contextmenu", handler);
   }, []);
 
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js");
+    }
+  }, []);
+
   return (
     <>
       {!loaded && (
