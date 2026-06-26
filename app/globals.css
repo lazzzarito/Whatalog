@@ -201,15 +201,17 @@ body {
 }
 
 .sort-modal-sheet {
-  position: relative;
-  width: min(100%, 420px);
-  max-width: 420px;
-  background: var(--bg-primary);
-  border-radius: 24px 24px 0 0;
-  box-shadow: var(--shadow-lg);
-  padding: 1.75rem 1.5rem 1.5rem;
-  animation: modal-slide-up 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
+   position: relative;
+   width: min(100%, 420px);
+   max-width: 420px;
+   max-height: 80dvh;
+   background: var(--bg-primary);
+   border-radius: 24px 24px 0 0;
+   box-shadow: var(--shadow-lg);
+   padding: 1.75rem 1.5rem 1.5rem;
+   overflow-y: auto;
+   animation: modal-slide-up 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+ }
 
 .sort-modal-options {
   display: grid;
@@ -1035,13 +1037,13 @@ body {
   transition: transform 0.28s ease, opacity 0.28s ease;
   display: flex;
   flex-direction: column;
-  max-height: 90svh;
-  opacity: 0;
-  pointer-events: none;
-}
+   max-height: 95dvh;
+   opacity: 0;
+   pointer-events: none;
+ }
 
-@media (max-width: 768px) {
-  .cart-drawer {
+ @media (max-width: 768px) {
+   .cart-drawer {
     left: 0;
     right: 0;
     width: 100%;
@@ -1665,11 +1667,11 @@ body {
 }
 
 .store-info-modal {
-  background: var(--bg-primary);
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-  width: 100%;
-  max-width: 100%;
-  max-height: 90svh;
+   background: var(--bg-primary);
+   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+   width: 100%;
+   max-width: 100%;
+   max-height: 95dvh;
   box-shadow: var(--shadow-lg);
   position: relative;
   animation: modal-slide-up 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -1892,7 +1894,7 @@ body {
 .promo-modal-banner-img {
   width: 100%;
   height: auto;
-  max-height: 45svh;
+   max-height: 45dvh;
   object-fit: contain;
   display: block;
 }

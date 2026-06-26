@@ -362,7 +362,7 @@ export default function QuickBuyModal({ product, onClose, onOrderComplete, store
           z-index: 310;
           background: var(--bg-primary);
           max-width: 500px;
-          max-height: 90dvh;
+          max-height: 95dvh;
           border-radius: var(--radius-lg) var(--radius-lg) 0 0;
           box-shadow: var(--shadow-lg);
           display: flex;

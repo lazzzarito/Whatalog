@@ -351,7 +351,7 @@ export default function ProductModal({ product, onClose, onAddToCart, storeConfi
           border-radius: var(--radius-lg) var(--radius-lg) 0 0;
           width: 100%;
           max-width: 100%;
-          max-height: 90svh;
+          max-height: 95dvh;
           box-shadow: var(--shadow-lg);
           position: relative;
           animation: modal-slide-up 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;

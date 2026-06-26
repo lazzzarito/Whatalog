@@ -1508,10 +1508,6 @@ In `components/FilterHeader.jsx`, replace:
 
 Because all UI text is plain English, visitors who speak other languages can use their browser's built-in translate feature (available in Chrome, Edge, Safari, and Firefox). This requires no code changes on your part.
 
-### Pro Version
-
-The **Whatalog Pro** version will include automatic translation via DeepL / Google Cloud Translation API, covering both UI strings and product descriptions.
-
 ---
 
 ## Dark Mode
