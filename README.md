@@ -70,6 +70,9 @@ Whatalog is open source under the MIT license. You can use it, modify it, and di
   <img src="public/images/mobile_view.webp" alt="Mobile catalog" width="45%" style="border-radius: 15px;">
   <img src="public/images/product_view.webp" alt="Product view" width="45%" style="border-radius: 15px;">
   <img src="public/images/cart_view.webp" alt="Cart view" width="45%" style="border-radius: 15px;">
+  <img src="public/images/favs_view.webp" alt="Favorites view" width="45%" style="border-radius: 15px;">
+  <img src="public/images/quickbuy_view.webp" alt="Quick Buy view" width="45%" style="border-radius: 15px;">
+  <img src="public/images/filters_view.webp" alt="Filters view" width="45%" style="border-radius: 15px;">
 </div>
 
 ---
