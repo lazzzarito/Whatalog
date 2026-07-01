@@ -1,23 +1,24 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { lockBodyScroll } from "@/lib/scroll-lock";
 import { useHistoryPopup } from "@/lib/use-history-popup";
 import MasonryGrid from "@/components/MasonryGrid";
 import ProductCard from "@/components/ProductCard";
 
 export default function FavoritesModal({ products, favoriteIds, onToggleFavorite, onClose, onAddToCart, onOpenProduct }) {
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
   useEffect(() => {
-    if (favoriteIds.length > 0) {
-      const unlock = lockBodyScroll();
-      const handler = (e) => { if (e.key === "Escape") onClose(); };
-      document.addEventListener("keydown", handler);
-      return () => {
-        document.removeEventListener("keydown", handler);
-        unlock();
-      };
-    }
-  }, [favoriteIds.length, onClose]);
+    const unlock = lockBodyScroll();
+    const handler = (e) => { if (e.key === "Escape") onCloseRef.current(); };
+    document.addEventListener("keydown", handler);
+    return () => {
+      document.removeEventListener("keydown", handler);
+      unlock();
+    };
+  }, []);
 
   useHistoryPopup(favoriteIds.length > 0, onClose);
 
