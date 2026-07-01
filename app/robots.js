@@ -6,6 +6,6 @@ export default function robots() {
         allow: "/",
       },
     ],
-    sitemap: "https://whatalog.vercel.app/sitemap.xml",
+    sitemap: `${process.env.NEXT_PUBLIC_BASE_URL || "https://whatalog.vercel.app"}/sitemap.xml`,
   };
 }

@@ -41,10 +41,10 @@ export default function StoreInfoCard({ storeConfig, showHowToBuy = false, onOpe
         {storeConfig.whatsappNumber}
       </StoreInfoItem>
       <StoreInfoItem icon="clock" strong="Hours" href={`${waHref}?text=${encodeURIComponent("Hi, I'd like to know your business hours")}`}>
-        Monday - Saturday, 9:00 AM — 6:00 PM
+        {storeConfig.businessHours || "Monday - Saturday, 9:00 AM — 6:00 PM"}
       </StoreInfoItem>
       <StoreInfoItem icon="truck" strong="Deliveries" href={`${waHref}?text=${encodeURIComponent("Hi, I need information about deliveries")}`}>
-        Coordinated shipping in Miami area
+        {storeConfig.deliveriesInfo || "Coordinated shipping in Miami area"}
       </StoreInfoItem>
 
       {onOpenLegal && (

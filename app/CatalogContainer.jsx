@@ -7,6 +7,7 @@ import FilterHeader from "@/components/FilterHeader";
 import MasonryGrid from "@/components/MasonryGrid";
 import ProductCard from "@/components/ProductCard";
 import Icon from "@/components/Icon";
+import StoreInfoCard, { StoreInfoItem } from "@/components/StoreInfoCard";
 import { initPopupHistory } from "@/lib/popup-history";
 import CatalogSkeleton from "@/components/CatalogSkeleton";
 
@@ -430,7 +431,7 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
       />
 
       {toast && (
-        <div className={`toast-notification ${toastType}${undoItem ? " has-undo" : ""}`}>
+        <div className={`toast-notification ${toastType}${undoItem ? " has-undo" : ""}`} role="status">
           <Icon name={toastType === "warning" ? "warning" : "check"} />
           <span>{toast}</span>
           {undoItem && (
@@ -440,7 +441,7 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
       )}
 
       {/* ── Main content: promos, offers, product grid ── */}
-      <main className="main-container">
+      <main className="main-container" id="main-content">
         {promoBanners[0] && (
           <div className="promo-grid">
             <div className="promo-grid-landscape" onClick={() => handlePromoClick(0)} style={{ cursor: "pointer" }}>
@@ -493,7 +494,7 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
         )}
 
         <div ref={catalogRef}>
-          <h2 className="featured-title" style={{ marginTop: offerProducts.length > 0 ? "2.5rem" : 0 }}>
+          <h1 className="featured-title" style={{ marginTop: offerProducts.length > 0 ? "2.5rem" : 0 }}>
             Available Products
             <span className="featured-title-line" />
             <button
@@ -504,7 +505,7 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
                <Icon name="filter" />
                 <span className="btn-expand-label">Filters</span>
             </button>
-          </h2>
+          </h1>
           {visibleProducts.length > 0 ? (
             <MasonryGrid key={`${activeCategory}-${searchQuery}-${sortBy}`}>
               {visibleProducts.map((product, i) => (
@@ -677,88 +678,7 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
             </div>
           </div>
           <div className="footer-store-grid">
-            <a
-              href={storeConfig.googleMapsUrl || `https://www.google.com/maps/search/${encodeURIComponent(storeConfig.location || "")}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="store-info-item"
-              style={{ cursor: "pointer", textDecoration: "none", color: "inherit", display: "flex" }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" />
-              </svg>
-              <div>
-                <strong>Location</strong>
-                <p>{storeConfig.location}</p>
-              </div>
-            </a>
-            <a
-              href={`https://wa.me/${storeConfig.whatsappNumber.replace(/[^0-9+]/g, "")}?text=${encodeURIComponent("Hi, I have a question about your products")}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="store-info-item"
-              style={{ cursor: "pointer", textDecoration: "none", color: "inherit", display: "flex" }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-              </svg>
-              <div>
-                <strong>WhatsApp</strong>
-                <p>{storeConfig.whatsappNumber}</p>
-              </div>
-            </a>
-            <a
-              href={`https://wa.me/${storeConfig.whatsappNumber.replace(/[^0-9+]/g, "")}?text=${encodeURIComponent("Hi, I'd like to know your business hours")}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="store-info-item"
-              style={{ cursor: "pointer", textDecoration: "none", color: "inherit", display: "flex" }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
-              </svg>
-              <div>
-                <strong>Hours</strong>
-                <p>Monday - Saturday, 9:00 AM – 6:00 PM</p>
-              </div>
-            </a>
-            <a
-              href={`https://wa.me/${storeConfig.whatsappNumber.replace(/[^0-9+]/g, "")}?text=${encodeURIComponent("Hi, I need information about deliveries")}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="store-info-item"
-              style={{ cursor: "pointer", textDecoration: "none", color: "inherit", display: "flex" }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="1" y="3" width="15" height="13" /><polygon points="16 8 20 8 23 11 23 16 16 16 16 8" /><circle cx="5.5" cy="18.5" r="2.5" /><circle cx="18.5" cy="18.5" r="2.5" />
-              </svg>
-              <div>
-                <strong>Deliveries</strong>
-                <p>Coordinated shipping in Miami area</p>
-              </div>
-            </a>
-            <div className="store-info-item" style={{ cursor: "pointer" }} onClick={() => window.dispatchEvent(new CustomEvent("open-legal-modal"))}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" />
-              </svg>
-              <div>
-                <strong>Legal Information</strong>
-                <p>Cookies, Privacy &amp; Terms</p>
-              </div>
-            </div>
-
-            {storeConfig.donationUrl && (
-              <a href={storeConfig.donationUrl} target="_blank" rel="noopener noreferrer" className="store-info-item" style={{ cursor: "pointer", textDecoration: "none", color: "inherit", display: "flex" }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e74c3c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                </svg>
-                <div>
-                  <strong style={{ color: "#e74c3c" }}>Support the template</strong>
-                  <p>Buy me a coffee ❤️</p>
-                </div>
-              </a>
-            )}
-
+            <StoreInfoCard storeConfig={storeConfig} onOpenLegal={() => window.dispatchEvent(new CustomEvent("open-legal-modal"))} />
           </div>
         </div>
 

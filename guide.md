@@ -25,30 +25,34 @@ Edit `content/store-config.json` with your store info, add products as `.md` fil
 whatalog/
 ├── app/
 │   ├── api/images/
-│   │   ├── products/[filename]/route.js   → Serves product images
-│   │   └── promos/[filename]/route.js      → Serves promo images
+│   │   ├── products/[filename]/route.js   → Serves product images (async fs)
+│   │   └── promos/[filename]/route.js      → Serves promo images (async fs)
 │   ├── product/[id]/
-│   │   ├── page.js                          → Product detail page (SSG + ISR)
+│   │   ├── page.js                          → Product detail page (SSG + ISR, canonical URL via env)
 │   │   └── ProductPageClient.jsx            → Product page client component
-│   ├── globals.css                          → Global styles (colors, fonts, layout)
-│   ├── layout.js                            → Root layout (meta tags, fonts)
+│   ├── error.js                             → Root error boundary (catches render crashes)
+│   ├── globals.css                          → Global styles (colors, fonts, layout, component styles)
+│   ├── layout.js                            → Root layout (meta tags, OG image, canonical, next/font, preconnect)
 │   ├── page.js                              → Home page (server component)
-│   └── CatalogContainer.jsx                 → Main client component
+│   └── CatalogContainer.jsx                 → Main client component (h1, skip-to-content target, StoreInfoCard footer)
 ├── components/
-│   ├── Cart.jsx                             → Shopping cart & checkout form
-│   ├── FilterHeader.jsx                     → Header, search, categories, filters, store info modal
+│   ├── Cart.jsx                             → Shopping cart & checkout form (focus trap, live regions)
+│   ├── ErrorBoundary.jsx                    → React error boundary wrapper
+│   ├── FilterHeader.jsx                     → Header, search, categories, filters, store info modal (aria-labels)
+│   ├── Icon.jsx                             → Centralized SVG icon definitions
 │   ├── LegalInfoModal.jsx                   → Legal / cookies popup
 │   ├── MasonryGrid.jsx                      → CSS multi-column masonry wrapper
 │   ├── OfferModal.jsx                       → Flash Offers popup (all offer products in masonry grid)
 │   ├── Preloader.jsx                        → Loading spinner shown on first render
 │   ├── ProductCard.jsx                      → Product card with image, price, add-to-cart, favorite toggle
-│   ├── ProductModal.jsx                     → Product detail modal with gallery, attributes, sharing
+│   ├── ProductModal.jsx                     → Product detail modal with gallery, attributes, sharing (focus trap)
 │   ├── PromoModal.jsx                       → Promo products popup (masonry grid, no banner)
 │   ├── QuickBuyModal.jsx                    → Direct buy / quick checkout form
 │   ├── Skeleton.jsx                         → Shimmer skeleton loader
+│   ├── StoreInfoCard.jsx                    → Reusable store info card (address, hours, delivery, social links)
 │   └── CustomerInfoModal.jsx                → Onboarding form (name, phone, delivery, payment)
 ├── content/
-│   ├── store-config.json                    → Store configuration (name, WhatsApp number, promo banners, links, Google Sheets config)
+│   ├── store-config.json                    → Store configuration (name, WhatsApp, hours, delivery, promo banners, links, Sheets config)
 │   ├── products/                            → Product .md files + image files
 │   ├── promos/                              → Promotional images (landscape + 2 squares)
 │   ├── products.csv                         → Local CSV product catalog sheet
@@ -58,6 +62,7 @@ whatalog/
 │   ├── products.js                          → Server helpers: getStoreConfig(), getProducts(), getProductById(), getAllProductIds()
 │   ├── sheets.js                            → Google Sheets fetcher (dual-source product loading)
 │   ├── scroll-lock.js                       → Body scroll lock utility (counter-based)
+│   ├── use-focus-trap.js                    → Focus trap hook for accessible modals
 │   └── use-history-popup.js                 → React hook wrapping popup-history registerPopup
 ├── public/
 │   └── images/logo.webp                     → Store logo (displayed in header)
@@ -129,6 +134,7 @@ options:                          # Dictionary of options (size, color, etc.) di
     - name: "Matte Black"
       image: "insulated_tumbler_matte_black.png"
 promo: "summer-fragrances"        # String. Groups product into a promo modal (matches promoLinks target).
+ratio: "tall"                     # String. Override masonry aspect ratio: "tall", "square", or "wide". Auto-assigned based on id.length if omitted.
 ---
 ```
 
@@ -290,11 +296,12 @@ Product images are displayed in a CSS multi-column masonry grid with three aspec
 - **Square** (`ratio-square`): padding-top 100% (1:1)
 - **Wide** (`ratio-wide`): padding-top 80% (landscape orientation)
 
-The aspect ratio is assigned deterministically based on the product ID length (`id.length % 3`). This ensures each product always gets the same ratio while creating a visually diverse masonry layout.
+The aspect ratio is assigned deterministically based on the product ID length (`id.length % 3`) by default. You can override any product's ratio by setting the `ratio` field in its frontmatter:
 
 - `id.length % 3 === 0` → `ratio-tall`
 - `id.length % 3 === 1` → `ratio-square`
 - `id.length % 3 === 2` → `ratio-wide`
+- Frontmatter `ratio: "tall"` / `"square"` / `"wide"` → explicit override
 
 Images use `object-fit: cover` and scale on hover (1.08×) with a smooth CSS transition.
 
@@ -410,7 +417,9 @@ File: `content/store-config.json`
     { "type": "promo", "target": "summer-fragrances", "title": "Summer Fragrances", "subtitle": "Light & fresh scents" },
     { "type": "promo", "target": "accessories-edit", "title": "Accessories Edit", "subtitle": "Complete your look" },
     { "type": "promo", "target": "leather-essentials", "title": "Leather Essentials", "subtitle": "Timeless pieces" }
-  ]
+  ],
+  "businessHours": "Mon–Sat: 9:00 AM – 7:00 PM",
+  "deliveriesInfo": "Free delivery on orders over $50. Same-day delivery within Miami."
 }
 ```
 
@@ -425,6 +434,8 @@ File: `content/store-config.json`
 | `promoBanners`    | array  | No       | Array of up to 3 image paths for the hero promotional grid. See Promotional Images section above.                                             |
 | `promoLinks`      | array  | No       | Array of up to 3 promo link configs, one per promo banner. Controls what happens when each banner is tapped.                                  |
 | `donationUrl`     | string | No       | Optional URL for a donation/support link (e.g., Buy Me a Coffee, PayPal, Ko-fi). When set, shows a "Support this template" button in the Store Info modal. |
+| `businessHours`   | string | No       | Store hours string displayed in the Store Info card (e.g., `"Mon–Sat: 9 AM – 7 PM"`). |
+| `deliveriesInfo`  | string | No       | Delivery policy string displayed below hours in the Store Info card (e.g., `"Free delivery on orders over $50"`). |
 
 ### Fallback Values
 
@@ -611,12 +622,14 @@ for smooth dark/light mode switching. Product cards have additional transform/sh
 
 ## Fonts and Typography
 
-The project uses a local font stack (no Google Fonts dependency) inspired by WhatsApp Web's system fonts.
+The project uses **Inter** via `next/font` (self-hosted, subsetted) as the primary sans-serif, with a fallback stack matching WhatsApp Web's system fonts.
 
 ### Font Stacks
 
-- **Sans-serif** (`--font-sans`): `"Segoe UI", "Helvetica Neue", Helvetica, "Lucida Grande", Arial, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", sans-serif`
+- **Sans-serif** (`--font-sans`): `Inter, "Segoe UI", "Helvetica Neue", Helvetica, "Lucida Grande", Arial, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", sans-serif`
 - **Serif** (`--font-serif`): `Georgia, "Times New Roman", serif`
+
+Inter is loaded via `app/layout.js` and registered as the `--font-inter` CSS variable, then prepended to the `--font-sans` stack in `app/globals.css`. This eliminates FOUT (Flash of Unstyled Text) and avoids external font requests.
 
 ### Typography Usage
 
@@ -1452,6 +1465,8 @@ Each product gets its own dedicated page with full SEO metadata.
 - **SSG pre-rendered** — all product pages are generated at build time via `generateStaticParams`
 - **ISR** — pages revalidate every 60 seconds (`revalidate: 60`) so Sheet changes propagate
 - **Per-product meta tags** — `generateMetadata` dynamically sets `<title>`, OG image, Twitter Card
+- **Canonical URL** — uses `NEXT_PUBLIC_BASE_URL` env var (falls back to `https://whatalog.vercel.app`)
+- **Default OG image** — homepage layout sets an `og:image` fallback for social previews
 - **JSON-LD structured data** — products are marked up as `schema.org/Product` for rich search results
 - **Full product page** — back-to-catalog link, image gallery, price, options, Add to Cart, Buy Now, Share
 
@@ -1557,10 +1572,10 @@ Whatalog works as an installable PWA. On Android, Chrome shows an "Add to Home S
 
 ### What's included
 
-- **`public/manifest.json`** — defines app name, icons, theme color (`#00a884`), and standalone display mode.
-- **`public/sw.js`** — a service worker that caches assets for faster repeat visits and basic offline support.
+- **`public/manifest.json`** — defines app name, icons, theme color (`#00a884`), standalone display mode, `scope`, `id`, and `purpose` fields for full PWA compliance.
+- **`public/sw.js`** (v3) — a service worker with **cache-first for navigations** (app shell cached on install), network-first for API routes, and fallback-to-placeholder for offline images.
 - **`public/icons/`** — PWA icons at 192×192 and 512×512, generated from the store logo.
-- **`app/layout.js`** — includes `manifest.json`, `theme-color`, `apple-touch-icon`, and Apple PWA meta tags.
+- **`app/layout.js`** — includes `manifest.json` (via `metadata` API), `theme-color`, `apple-touch-icon`, and Apple PWA meta tags.
 - **`components/Preloader.jsx`** — registers the service worker on the client side.
 
 ### Customize
@@ -1579,7 +1594,7 @@ sharp('public/images/logo.webp').resize(512, 512).png().toFile('public/icons/ico
 "
 ```
 
-4. **Service worker** — edit `public/sw.js` to change caching behavior. The current strategy is **network-first with cache fallback**: always try the network first, fall back to cache if offline.
+4. **Service worker** — edit `public/sw.js` to change caching behavior. The current strategy is **cache-first for navigations** (the app shell is cached on install) with **network-first for API routes** and a placeholder fallback for offline images.
 
 ### Verify PWA
 
@@ -1601,6 +1616,7 @@ npm run dev       # Start development server on http://localhost:3000
 npm run build     # Production build (generates .next/)
 npm start         # Start production server (after build)
 npm run lint      # Run ESLint
+npm run analyze   # Build with @next/bundle-analyzer (visualize bundle sizes)
 ```
 
 ### Next.js Commands (via npx)
@@ -1620,7 +1636,7 @@ npx next lint           # Run ESLint (same as npm run lint)
    - Build command: `npm run build`
    - Output directory: `.next`
    - Install command: `npm install`
-5. Environment variables: none required.
+5. Environment variables: `NEXT_PUBLIC_BASE_URL` is optional; set it to your custom domain (e.g., `https://mystore.com`) for correct canonical URLs and sitemap entries. Defaults to `https://whatalog.vercel.app`.
 6. All content files (products, config, images) must be committed to the repository — there is no admin panel or CMS.
 
 ### Important Notes for Production

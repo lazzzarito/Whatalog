@@ -1,7 +1,8 @@
 import { getAllProductIds, getStoreConfig } from "@/lib/products";
 
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://whatalog.vercel.app";
+
 export default async function sitemap() {
-  const baseUrl = "https://whatalog.vercel.app";
   const config = getStoreConfig();
 
   const productIds = await getAllProductIds();

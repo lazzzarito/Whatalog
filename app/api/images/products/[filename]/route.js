@@ -1,4 +1,4 @@
-import fs from "fs";
+import fs from "fs/promises";
 import path from "path";
 import { NextResponse } from "next/server";
 
@@ -19,20 +19,17 @@ export async function GET(request, { params }) {
     const { filename } = await params;
     const decoded = decodeURIComponent(filename);
 
-    // Security: Prevent directory traversal
     if (decoded.includes("..") || decoded.includes("/")) {
       return new NextResponse("Forbidden", { status: 403 });
     }
 
     const filePath = path.join(productsDir, decoded);
 
-    if (!fs.existsSync(filePath)) {
-      return new NextResponse("Not Found", { status: 404 });
-    }
+    try { await fs.access(filePath); } catch { return new NextResponse("Not Found", { status: 404 }); }
 
     const ext = path.extname(decoded).toLowerCase();
     const contentType = MIME_TYPES[ext] || "application/octet-stream";
-    const buffer = fs.readFileSync(filePath);
+    const buffer = await fs.readFile(filePath);
 
     return new NextResponse(buffer, {
       headers: {

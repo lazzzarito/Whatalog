@@ -37,9 +37,9 @@ Deploy anywhere Node.js runs — Vercel, Netlify, Railway, or your own VPS. No e
 
 Small businesses, local shops, independent sellers, artisans, and entrepreneurs who need a professional online catalog without the complexity and cost of traditional e-commerce platforms. If you sell on WhatsApp or plan to, this is for you.
 
-### Why not just use Instagram?
+### Why not just use Social Networks?
 
-Instagram is great for reach, but it's a terrible storefront. Your products get buried in the feed, there's no cart, no organized catalog, no way for customers to browse and pick what they want without endless scrolling and screenshots. A customer has to see a post, comment "price?", wait for your reply, then manually send their order. It's friction at every step.
+Instagram, Facebook, Twitter are great for reach, but it's a terrible storefront. Your products get buried in the feed, there's no cart, no organized catalog, no way for customers to browse and pick what they want without endless scrolling and screenshots. A customer has to see a post, comment "price?", wait for your reply, then manually send their order. It's friction at every step.
 
 Whatalog gives your customers a real storefront — search products, filter by category, see prices clearly, add to cart, and send the complete order as one formatted WhatsApp message. No back-and-forth, no screenshots, no confusion.
 
@@ -83,25 +83,27 @@ Whatalog is open source under the MIT license. You can use it, modify it, and di
 
 ## Features
 
-| Feature                              | What it does                                                                                                                                                  |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Multi-format catalogs**      | Load products from Markdown (`.md`), Excel (`.xlsx`), CSV, or Google Sheets. All formats support variants and attributes.                                 |
-| **CSS masonry grid**           | True Pinterest-style waterfall layout. Products look great at any aspect ratio — tall, square, or wide.                                                      |
-| **Search & filters**           | Real-time search, category filtering, sort by price, name, or newest.                                                                                         |
-| **PWA support**                | Installable as an app on Android and iOS. Service worker for offline-ready caching. Add-to-home-screen with custom icons, splash screen, and standalone mode. |
-| **Smart cart**                 | Persists across sessions. Edit products from the cart, undo deletions with a 4-second timer, animated checkout steps with collapsible order summary.          |
-| **WhatsApp checkout**          | One tap generates a complete, formatted order message with items, prices, and totals.                                                                         |
-| **Popup navigation stack**     | Each popup tracks browser history. Tap back once per popup. Nested modals (Promo → Product → QuickBuy) stay properly stacked.                               |
-| **Flash Offers section**       | Products with discounts appear in a dedicated masonry grid. A + button opens all offers in a full popup.                                                      |
-| **Dark mode**                  | Automatic based on system preference. Fully customizable via CSS variables.                                                                                   |
-| **Promo groups**               | Group 2–4 products into promo modals that open from banner images.                                                                                           |
-| **Browser-native translation** | UI is in English; visitors use their browser's built-in translate to view it in any language.                                                                 |
+| Feature                              | What it does                                                                                                                                               |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Multi-format catalogs**      | Load products from Markdown (`.md`), Excel (`.xlsx`), CSV, or Google Sheets. All formats support variants and attributes.                              |
+| **CSS masonry grid**           | True Pinterest-style waterfall layout. Products look great at any aspect ratio — tall, square, or wide. Configurable per product via frontmatter.         |
+| **Search & filters**           | Real-time search, category filtering, sort by price, name, or newest.                                                                                      |
+| **PWA support**                | Installable as an app on Android and iOS. Cache-first service worker (v3) for fast repeat visits and offline fallback. Full manifest with scope & purpose. |
+| **Smart cart**                 | Persists across sessions. Edit products from the cart, undo deletions with a 4-second timer, animated checkout steps with collapsible order summary.       |
+| **WhatsApp checkout**          | One tap generates a complete, formatted order message with items, prices, and totals.                                                                      |
+| **Popup navigation stack**     | Each popup tracks browser history. Tap back once per popup. Nested modals stay properly stacked. Focus trap for keyboard accessibility.                    |
+| **Flash Offers section**       | Products with discounts appear in a dedicated masonry grid. A + button opens all offers in a full popup.                                                   |
+| **Dark mode**                  | Automatic based on system preference. Fully customizable via CSS variables.                                                                                |
+| **Promo groups**               | Group 2–4 products into promo modals that open from banner images.                                                                                        |
+| **Browser-native translation** | UI is in English; visitors use their browser's built-in translate to view it in any language.                                                              |
+| **SEO & performance**          | SSG + ISR, canonical URLs, OG images, JSON-LD structured data, self-hosted Inter font, content-visibility optimizations, bundle analyzer support.          |
+| **Error resilience**           | React error boundary catches render crashes without breaking the entire app.                                                                               |
 
 ---
 
 ## Customize
 
-Edit `content/store-config.json` to set your store name, phone number, currency, promo banners, and social links. Add products as `.md` files in `content/products/` or edit the Excel/CSV catalog sheets. Swap `logo.webp` for your own logo. Adjust colors and fonts in `app/globals.css`.
+Edit `content/store-config.json` to set your store name, phone number, currency, business hours, delivery info, promo banners, and social links. Add products as `.md` files in `content/products/` or edit the Excel/CSV catalog sheets. Swap `logo.webp` for your own logo. Adjust colors and fonts in `app/globals.css`.
 
 No code changes needed for the basics — just configuration files and content.
 

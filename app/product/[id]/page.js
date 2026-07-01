@@ -19,7 +19,8 @@ export async function generateMetadata({ params }) {
   const title = product.seoTitle || `${product.name} — ${siteName}`;
   const description = product.seoDescription || product.description || `Shop ${product.name} online.`;
   const image = product.image || "/images/placeholder.svg";
-  const url = `https://whatalog.vercel.app/product/${params.id}`;
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://whatalog.vercel.app";
+  const url = `${baseUrl}/product/${params.id}`;
 
   return {
     title,
@@ -74,8 +75,8 @@ export default async function ProductPage({ params }) {
     "@context": "https://schema.org/",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://whatalog.vercel.app/" },
-      { "@type": "ListItem", position: 2, name: product.category || "Products", item: `https://whatalog.vercel.app/?category=${product.category}` },
+      { "@type": "ListItem", position: 1, name: "Home", item: `${baseUrl}/` },
+      { "@type": "ListItem", position: 2, name: product.category || "Products", item: `${baseUrl}/?category=${product.category}` },
       { "@type": "ListItem", position: 3, name: product.name },
     ],
   };
