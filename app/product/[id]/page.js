@@ -14,7 +14,8 @@ export async function generateMetadata({ params }) {
   const product = await getProductById(params.id);
   if (!product) return { title: "Product Not Found" };
 
-  const siteName = "Whatalog Demo Store";
+  const storeConfig = getStoreConfig();
+  const siteName = storeConfig.name || "Whatalog Demo Store";
   const title = product.seoTitle || `${product.name} — ${siteName}`;
   const description = product.seoDescription || product.description || `Shop ${product.name} online.`;
   const image = product.image || "/images/placeholder.svg";
@@ -69,12 +70,27 @@ export default async function ProductPage({ params }) {
     },
   };
 
+  const breadcrumbLd = {
+    "@context": "https://schema.org/",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://whatalog.vercel.app/" },
+      { "@type": "ListItem", position: 2, name: product.category || "Products", item: `https://whatalog.vercel.app/?category=${product.category}` },
+      { "@type": "ListItem", position: 3, name: product.name },
+    ],
+  };
+
   return (
     <>
       <Script
         id="product-jsonld"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <Script
+        id="breadcrumb-jsonld"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
       />
       <ProductPageClient product={product} storeConfig={storeConfig} />
     </>

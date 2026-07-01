@@ -6,17 +6,18 @@ import Image from "next/image";
 import FilterHeader from "@/components/FilterHeader";
 import MasonryGrid from "@/components/MasonryGrid";
 import ProductCard from "@/components/ProductCard";
+import Icon from "@/components/Icon";
 import { initPopupHistory } from "@/lib/popup-history";
 import CatalogSkeleton from "@/components/CatalogSkeleton";
 
-const ProductModal = dynamic(() => import("@/components/ProductModal"), { ssr: false });
-const Cart = dynamic(() => import("@/components/Cart"), { ssr: false });
-const QuickBuyModal = dynamic(() => import("@/components/QuickBuyModal"), { ssr: false });
-const PromoModal = dynamic(() => import("@/components/PromoModal"), { ssr: false });
-const OfferModal = dynamic(() => import("@/components/OfferModal"), { ssr: false });
-const CustomerInfoModal = dynamic(() => import("@/components/CustomerInfoModal"), { ssr: false });
-const LegalInfoModal = dynamic(() => import("@/components/LegalInfoModal"), { ssr: false });
-const FavoritesModal = dynamic(() => import("@/components/FavoritesModal"), { ssr: false });
+const ProductModal = dynamic(() => import("@/components/ProductModal"), { ssr: false, loading: () => null });
+const Cart = dynamic(() => import("@/components/Cart"), { ssr: false, loading: () => null });
+const QuickBuyModal = dynamic(() => import("@/components/QuickBuyModal"), { ssr: false, loading: () => null });
+const PromoModal = dynamic(() => import("@/components/PromoModal"), { ssr: false, loading: () => null });
+const OfferModal = dynamic(() => import("@/components/OfferModal"), { ssr: false, loading: () => null });
+const CustomerInfoModal = dynamic(() => import("@/components/CustomerInfoModal"), { ssr: false, loading: () => null });
+const LegalInfoModal = dynamic(() => import("@/components/LegalInfoModal"), { ssr: false, loading: () => null });
+const FavoritesModal = dynamic(() => import("@/components/FavoritesModal"), { ssr: false, loading: () => null });
 
 export default function CatalogContainer({ initialProducts, storeConfig }) {
   const [cartItems, setCartItems] = useState([]);
@@ -291,7 +292,7 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
         const first = entries[0];
         if (first.isIntersecting && !loadingMore) {
           setLoadingMore(true);
-          setTimeout(() => {
+          requestAnimationFrame(() => {
             setVisibleLimit((prev) => {
               const nextLimit = prev + 24;
               if (nextLimit >= sortedProducts.length) {
@@ -300,7 +301,7 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
               return nextLimit;
             });
             setLoadingMore(false);
-          }, 600);
+          });
         }
       },
       { threshold: 0.1 }
@@ -341,26 +342,16 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
     showToast(isCurrentlyFav ? "Removed from Favorites" : "Added to Favorites", isCurrentlyFav ? "warning" : "success");
   }, [favoriteIds]);
 
-  // ── Load persisted data from localStorage after hydration ──
+  // ── Load persisted data from localStorage after hydration (batched) ──
   useEffect(() => {
     try {
-      const stored = localStorage.getItem("whatalog_cart");
-      if (stored) setCartItems(JSON.parse(stored));
-    } catch (e) { console.error("Error reading cart:", e); }
-  }, []);
-
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem("whatalog_sold");
-      if (raw) setSoldMap(JSON.parse(raw));
-    } catch (e) {}
-  }, []);
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem("whatalog_favorites");
-      if (stored) setFavoriteIds(JSON.parse(stored));
-    } catch (e) {}
+      const cart = localStorage.getItem("whatalog_cart");
+      if (cart) setCartItems(JSON.parse(cart));
+      const sold = localStorage.getItem("whatalog_sold");
+      if (sold) setSoldMap(JSON.parse(sold));
+      const favs = localStorage.getItem("whatalog_favorites");
+      if (favs) setFavoriteIds(JSON.parse(favs));
+    } catch (e) { console.error("Error reading localStorage:", e); }
   }, []);
 
   const footerRef = useRef(null);
@@ -440,18 +431,7 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
 
       {toast && (
         <div className={`toast-notification ${toastType}${undoItem ? " has-undo" : ""}`}>
-          {toastType === "warning" ? (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-              <line x1="12" y1="9" x2="12" y2="13" />
-              <line x1="12" y1="17" x2="12.01" y2="17" />
-            </svg>
-          ) : (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-              <polyline points="22 4 12 14.01 9 11.01" />
-            </svg>
-          )}
+          <Icon name={toastType === "warning" ? "warning" : "check"} />
           <span>{toast}</span>
           {undoItem && (
             <button className="toast-undo-btn" onClick={handleUndoRemove}>Undo</button>
@@ -491,10 +471,7 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
                 onClick={() => setShowOffers(true)}
                 title="View all offers"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="12" y1="5" x2="12" y2="19"></line>
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
+                <Icon name="plus" />
                 <span className="btn-expand-label">See all</span>
               </button>
             </h2>
@@ -524,12 +501,8 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
               onClick={() => window.dispatchEvent(new CustomEvent("open-sort-menu"))}
               title="Filters"
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="4" y1="6" x2="20" y2="6"></line>
-                <line x1="4" y1="12" x2="16" y2="12"></line>
-                <line x1="4" y1="18" x2="12" y2="18"></line>
-              </svg>
-              <span className="btn-expand-label">Filters</span>
+               <Icon name="filter" />
+                <span className="btn-expand-label">Filters</span>
             </button>
           </h2>
           {visibleProducts.length > 0 ? (
@@ -549,9 +522,7 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
             </MasonryGrid>
           ) : (
             <div className="cart-empty-message" style={{ marginTop: "4rem" }}>
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
+              <Icon name="no-results" />
               <h3>No products found</h3>
               <p style={{ marginTop: "0.5rem", color: "var(--text-secondary)" }}>
                 Try different search terms or change category.
@@ -565,10 +536,7 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
                   }}
                   style={{ marginTop: "1.5rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                  </svg>
+                  <Icon name="cross" />
                   Clear Filters
                 </button>
               )}
@@ -669,146 +637,6 @@ export default function CatalogContainer({ initialProducts, storeConfig }) {
           onOpenProduct={setSelectedProduct}
         />
       )}
-
-      <style jsx global>{`
-        .promo-grid {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 0.5rem;
-          margin: 0 0 1.25rem 0;
-          container-type: inline-size;
-        }
-
-        .promo-grid-landscape {
-          position: relative;
-          aspect-ratio: 16 / 9;
-          border-radius: var(--radius-md);
-          overflow: hidden;
-          background: var(--bg-secondary);
-        }
-
-        .promo-grid-squares {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 0.5rem;
-          width: auto;
-        }
-
-        .promo-grid-square {
-          position: relative;
-          aspect-ratio: 1 / 1;
-          border-radius: var(--radius-md);
-          overflow: hidden;
-          background: var(--bg-secondary);
-        }
-
-        .promo-grid-img {
-          object-fit: cover;
-        }
-
-        @media (min-width: 769px) {
-          .promo-grid {
-            grid-template-columns: 1fr auto;
-            gap: 0.5rem;
-            margin: 0 0 2rem 0;
-          }
-
-          .promo-grid-landscape {
-            min-width: 0;
-          }
-
-          .promo-grid-squares {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-          }
-
-          .promo-grid-square {
-            flex: 1;
-            width: 100%;
-          }
-
-          @container (min-width: 0px) {
-            .promo-grid-squares {
-              width: calc((9 / 41) * 100cqw - 0.3049rem);
-            }
-          }
-        }
-
-        .btn-offers-expand {
-          background: var(--bg-secondary);
-          border: 1px solid var(--border-color);
-          color: var(--accent-green);
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 0.25rem;
-          flex-shrink: 0;
-          transition: all 0.2s;
-          margin-left: auto;
-          padding: 0.25rem 0.6rem;
-          border-radius: 15px;
-          font-size: 0.7rem;
-          font-weight: 600;
-          font-family: var(--font-sans);
-        }
-
-        .btn-offers-expand:hover {
-          background: var(--accent-green);
-          color: #fff;
-          border-color: var(--accent-green);
-          transform: scale(1.08);
-        }
-
-        .btn-filter-catalog {
-          background: var(--bg-secondary);
-          border: 1px solid var(--border-color);
-          color: var(--text-secondary);
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 0.25rem;
-          flex-shrink: 0;
-          transition: all 0.2s;
-          padding: 0.25rem 0.6rem;
-          border-radius: 15px;
-          font-size: 0.7rem;
-          font-weight: 600;
-          font-family: var(--font-sans);
-        }
-
-        .btn-filter-catalog:hover {
-          background: var(--accent-green);
-          color: #fff;
-          border-color: var(--accent-green);
-          transform: scale(1.08);
-        }
-
-        .featured-title-line {
-          flex: 1;
-          height: 1px;
-          background: var(--border-color);
-        }
-
-        .footer-made-by {
-          font-size: 0.78rem;
-          color: var(--text-secondary);
-          text-align: center;
-          margin-top: 0.5rem;
-        }
-
-        .footer-made-by a {
-          color: var(--accent-green);
-          text-decoration: none;
-          font-weight: 600;
-        }
-
-        .footer-made-by a:hover {
-          text-decoration: underline;
-        }
-      `}</style>
 
       {/* ── Footer with map & social links ── */}
       <footer className="app-footer-minimal" ref={footerRef}>

@@ -13,6 +13,9 @@ export const metadata = {
   icons: {
     apple: "/icons/icon-192x192.png",
   },
+  openGraph: {
+    locale: "en_US",
+  },
 };
 
 export const viewport = {
@@ -24,12 +27,9 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <head>
         <link rel="manifest" href="/manifest.json" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-title" content="Whatalog" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
       </head>
       <body>
+        <a href="#main-content" className="skip-to-content">Skip to content</a>
         <Preloader>
           {children}
         </Preloader>

@@ -123,6 +123,7 @@ export default function FilterHeader({
                 type="text"
                 className="search-input"
                 placeholder="Search products..."
+                aria-label="Search products"
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e.target.value)}
               />
@@ -180,10 +181,11 @@ export default function FilterHeader({
                       <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                     </svg>
                   </span>
-                  <input
+                    <input
                     type="text"
                     className="search-input"
                     placeholder="Search..."
+                    aria-label="Search products"
                     value={searchQuery}
                     onChange={(e) => onSearchChange(e.target.value)}
                   />

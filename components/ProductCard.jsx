@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import SafeImage from "@/components/SafeImage";
+import Icon from "@/components/Icon";
 
 export default function ProductCard({ product, onAddToCart, onOpenDetails, priority, isFavorited = false, onToggleFavorite, index = 0 }) {
   const { name, priceUSD, originalPrice, category, image, description, ratioClass } = product;
@@ -59,15 +60,7 @@ export default function ProductCard({ product, onAddToCart, onOpenDetails, prior
           onClick={(e) => { e.stopPropagation(); if (onToggleFavorite) onToggleFavorite(product.id); }}
           aria-label={isFavorited ? "Remove from favorites" : "Add to favorites"}
         >
-          {isFavorited ? (
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="#e74c3c" stroke="#e74c3c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-            </svg>
-          ) : (
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-            </svg>
-          )}
+          {isFavorited ? <Icon name="heart-filled" /> : <Icon name="heart-outline" />}
         </button>
       </div>
       <div className="product-card-info">
@@ -87,10 +80,7 @@ export default function ProductCard({ product, onAddToCart, onOpenDetails, prior
               title={hasOptions ? "Select options" : "Add to cart"}
               onClick={handleAdd}
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
-                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-              </svg>
+              <Icon name="cart" />
               {showPlus && <span className="plus-badge">+1</span>}
             </button>
           )}
